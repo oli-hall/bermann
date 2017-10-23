@@ -4,10 +4,12 @@ from pyspark.storagelevel import StorageLevel
 
 class RDD(object):
 
-    def __init__(self, input):
-        assert(input)
+    def __init__(self, input=[], name=None):
+        assert input
+        assert isinstance(input, list)
 
         self.input = input
+        self.name = name
 
     def aggregate(self, zeroValue, seqOp, combOp):
         raise NotImplementedError()
@@ -31,7 +33,7 @@ class RDD(object):
         raise NotImplementedError()
 
     def collect(self):
-        raise NotImplementedError()
+        return self.input
 
     def collectAsMap(self):
         raise NotImplementedError()
@@ -40,7 +42,7 @@ class RDD(object):
         raise NotImplementedError()
 
     def count(self):
-        raise NotImplementedError()
+        return len(self.input)
 
     def countApprox(self, timeout, confidence=0.95):
         raise NotImplementedError()
@@ -55,13 +57,15 @@ class RDD(object):
         raise NotImplementedError()
 
     def distinct(self, numPartitions=None):
-        raise NotImplementedError()
+        self.input = list(set(self.input))
 
     def filter(self, f):
         raise NotImplementedError()
 
     def first(self):
-        raise NotImplementedError()
+        if len(self.input) > 0:
+            return self.input[0]
+        raise ValueError("RDD is empty")
 
     def flatMap(self, f, preservesPartitioning=False):
         raise NotImplementedError()
@@ -139,7 +143,8 @@ class RDD(object):
         raise NotImplementedError()
 
     def map(self, f, preservesPartitioning=False):
-        raise NotImplementedError()
+        self.input = [f(i) for i in self.input]
+        return self
 
     def mapPartitions(self, f, preservesPartitioning=False):
         raise NotImplementedError()
@@ -166,7 +171,7 @@ class RDD(object):
         raise NotImplementedError()
 
     def name(self):
-        raise NotImplementedError()
+        return self.name
 
     def partitionBy(self, numPartitions, partitionFunc=portable_hash):
         raise NotImplementedError()
@@ -229,7 +234,7 @@ class RDD(object):
         raise NotImplementedError()
 
     def setName(self, name):
-        raise NotImplementedError()
+        self.name = name
 
     def sortBy(self, keyfunc, ascending=True, numPartitions=None):
         raise NotImplementedError()
@@ -250,13 +255,13 @@ class RDD(object):
         raise NotImplementedError()
 
     def sum(self):
-        raise NotImplementedError()
+        return sum(self.input)
 
     def sumApprox(self, timeout, confidence=0.95):
         raise NotImplementedError()
 
     def take(self, num):
-        raise NotImplementedError()
+        return self.input[:num]
 
     def takeOrdered(self, num, key=None):
         raise NotImplementedError()
