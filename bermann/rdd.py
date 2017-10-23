@@ -161,6 +161,8 @@ class RDD(object):
         raise NotImplementedError()
 
     def max(self, key=None):
+        if key:
+            return max(self.input, key=key)
         return max(self.input)
 
     def mean(self):
@@ -170,6 +172,8 @@ class RDD(object):
         raise NotImplementedError()
 
     def min(self, key=None):
+        if key:
+            return min(self.input, key=key)
         return min(self.input)
 
     def name(self):
