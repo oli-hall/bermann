@@ -132,7 +132,8 @@ class RDD(object):
         raise NotImplementedError()
 
     def keyBy(self, f):
-        raise NotImplementedError()
+        self.input = [(f(i), i) for i in self.input]
+        return self
 
     def keys(self):
         return self.map(lambda x: x[0])
