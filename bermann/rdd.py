@@ -123,7 +123,7 @@ class RDD(object):
         raise NotImplementedError()
 
     def isEmpty(self):
-        raise NotImplementedError()
+        return len(self.input) == 0
 
     def isLocallyCheckpointed(self):
         raise NotImplementedError()
