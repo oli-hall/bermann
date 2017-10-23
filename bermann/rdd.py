@@ -119,7 +119,12 @@ class RDD(object):
         raise NotImplementedError()
 
     def groupBy(self, f, numPartitions=None, partitionFunc=portable_hash):
-        raise NotImplementedError()
+        tmp = defaultdict(list)
+        for i in self.contents:
+            tmp[f(i)].append(i)
+
+        self.contents = [(k, v) for k, v in temp.items()]
+        return self
 
     def groupByKey(self, numPartitions=None, partitionFunc=portable_hash):
         tmp = defaultdict(list)
