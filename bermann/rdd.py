@@ -87,7 +87,8 @@ class RDD(object):
         return self
 
     def flatMapValues(self, f):
-        raise NotImplementedError()
+        self.contents = [(i[0], v) for i in self.contents for v in f(i[1])]
+        return self
 
     def fold(self, zeroValue, op):
         raise NotImplementedError()
