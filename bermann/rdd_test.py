@@ -32,15 +32,52 @@ class TestRDD(unittest.TestCase):
 
         self.assertEqual(3, rdd.count())
 
-    # countByKey
+    def test_countbykey_empty_rdd_returns_empty_dict(self):
+        rdd = RDD()
 
-    # conntByValue
+        self.assertEqual({}, rdd.countByKey())
 
-    # distinct
+    def test_countbykey_non_empty_rdd_returns_dict_of_counts(self):
+        rdd = RDD([('a', 1), ('b', 2), ('a', 3)])
 
-    # filter
+        self.assertEqual({'a': 2, 'b': 1}, rdd.countByKey())
 
-    # first
+    def test_countbyvalue_rdd_returns_dict_of_counts(self):
+        rdd = RDD([1, 2, 3, 1, 2, 1])
+
+        self.assertEqual({1: 3, 2: 2, 3: 1}, rdd.countByValue())
+
+    def test_distinct_rdd_returns_unique_list(self):
+        rdd = RDD([1, 2, 3, 1, 2, 1])
+
+        self.assertEqual([1, 2, 3], rdd.distinct().collect())
+
+    def test_distinct_on_unique_list_is_noop(self):
+        rdd = RDD([1, 2, 3])
+
+        self.assertEqual([1, 2, 3], rdd.distinct().collect())
+
+    def test_filter_rdd_by_identity_returns_input(self):
+        rdd = RDD([1, 2, 3])
+
+        self.assertEqual([1, 2, 3], rdd.filter(lambda x: True).collect())
+
+    def test_filter_rdd_returns_filters_by_input_func(self):
+        rdd = RDD([1, 2, 3])
+
+        self.assertEqual([2, 3], rdd.filter(lambda x: x > 1).collect())
+
+    def test_first_empty_rdd_raises_valueerror(self):
+        rdd = RDD()
+
+        with self.assertRaises(ValueError) as e:
+            rdd.first()
+        self.assertEqual(ValueError, type(e.exception))
+
+    def test_first_non_empty_rdd_returns_first_elem(self):
+        rdd = RDD([1, 2, 3])
+
+        self.assertEqual(1, rdd.first())
 
     # flatMap
 
