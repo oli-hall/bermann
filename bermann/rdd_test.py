@@ -1,6 +1,7 @@
 import unittest
 
 from bermann import RDD
+from py4j.protocol import Py4JJavaError
 
 
 class TestRDD(unittest.TestCase):
@@ -79,15 +80,47 @@ class TestRDD(unittest.TestCase):
 
         self.assertEqual(1, rdd.first())
 
-    # flatMap
+    def test_flatmap_on_rdd_with_identity_func_returns_rdd(self):
+        rdd = RDD([1, 2, 3])
 
-    # flatMapValues
+        self.assertEqual(rdd.collect(), rdd.flatMap(lambda x: [x]).collect())
 
-    # foreach
+    def test_flatmap_on_rdd_with_expanding_func_returns_rdd_of_expanded_elems(self):
+        rdd = RDD(['a b c', 'd e f'])
 
-    # groupBy
+        self.assertEqual(['a', 'b', 'c', 'd', 'e', 'f'], rdd.flatMap(lambda x: x.split()).collect())
 
-    # groupByKey
+    def test_flatmapvalues_on_rdd_with_identity_func_returns_rdd(self):
+        rdd = RDD([('a', 1), ('b', 2), ('c', 3)])
+
+        self.assertEqual(rdd.collect(), rdd.flatMapValues(lambda x: [x]).collect())
+
+    def test_flatmapvalues_on_rdd_with_expanding_func_returns_rdd_of_expanded_elems(self):
+        rdd = RDD([('a', 'a b c'), ('b', 'd e f')])
+
+        expected = [('a', 'a'), ('a', 'b'), ('a', 'c'), ('b', 'd'), ('b', 'e'), ('b', 'f')]
+        self.assertEqual(expected, rdd.flatMapValues(lambda x: x.split()).collect())
+
+    def test_foreach_on_rdd_runs_function_but_doesnt_affect_rdd(self):
+        items = []
+        add_to_items = lambda x: items.append(x) or x * x
+
+        rdd = RDD([1, 2, 3])
+
+        rdd.foreach(add_to_items)
+
+        self.assertEqual([1, 2, 3], items)
+        self.assertEqual([1, 2, 3], rdd.collect())
+
+    def test_groupby_on_rdd_returns_rdd_grouped_by_function(self):
+        rdd = RDD([1, 2, 3])
+
+        self.assertEqual([(0, [2]), (1, [1, 3])], rdd.groupBy(lambda x: x % 2).collect())
+
+    def test_groupbykey_on_rdd_returns_rdd_grouped_by_key(self):
+        rdd = RDD([('k1', 1), ('k1', 2), ('k2', 3)])
+
+        self.assertEqual([('k2', [3]), ('k1', [1, 2])], rdd.groupByKey().collect())
 
     def test_isempty_returns_false_for_non_empty_rdd(self):
         rdd = RDD([('k1', 'v1'), ('k1', 'v2'), ('k2', 'v3')])
@@ -99,7 +132,10 @@ class TestRDD(unittest.TestCase):
 
         self.assertTrue(rdd.isEmpty())
 
-    # keyBy
+    def test_keyby_returns_rdd_with_keys(self):
+        rdd = RDD([1, 2, 3])
+
+        self.assertEqual([('1', 1), ('2', 2), ('3', 3)], rdd.keyBy(lambda x: str(x)).collect())
 
     def test_keys_returns_keys_of_kv_rdd(self):
         rdd = RDD([('k1', 'v1'), ('k1', 'v2'), ('k2', 'v3')])
@@ -111,13 +147,35 @@ class TestRDD(unittest.TestCase):
 
         self.assertEqual(['a', 'b', 'c'], rdd.keys().collect())
 
-    # map
+    def test_map_on_rdd_with_identity_func_returns_rdd(self):
+        rdd = RDD([1, 2, 3])
 
-    # mapValues
+        self.assertEqual(rdd.collect(), rdd.map(lambda x: x).collect())
 
-    # max
+    def test_map_on_rdd_with_func_returns_rdd_of_mapped_elems(self):
+        rdd = RDD([1, 2, 3])
 
-    # min
+        self.assertEqual([1, 4, 9], rdd.map(lambda x: x * x).collect())
+
+    def test_mapvalues_on_rdd_with_func_returns_rdd_of_mapped_elems(self):
+        rdd = RDD([('a', 1), ('b', 2), ('c', 3)])
+
+        self.assertEqual([('a', 1), ('b', 4), ('c', 9)], rdd.mapValues(lambda x: x * x).collect())
+
+    def test_mapvalues_on_rdd_of_3tuples_returns_2tuple_rdd(self):
+        rdd = RDD([('a', 1, 'v1'), ('b', 2, 'v2'), ('c', 3, 'v3')])
+
+        self.assertEqual([('a', 1), ('b', 2), ('c', 3)], rdd.mapValues(lambda x: x).collect())
+
+    def test_max_rdd_returns_max_value(self):
+        rdd = RDD([1, 2, 3])
+
+        self.assertEqual(3, rdd.max())
+
+    def test_min_rdd_returns_min_value(self):
+        rdd = RDD([1, 2, 3])
+
+        self.assertEqual(1, rdd.min())
 
     def test_get_name_sets_name(self):
         name = 'my RDD'
@@ -125,8 +183,15 @@ class TestRDD(unittest.TestCase):
 
         self.assertEqual(name, rdd.name)
 
+    def test_filter_on_rdd_with_identity_func_returns_rdd(self):
+        rdd = RDD([1, 2, 3])
 
-    # reduce
+        self.assertEqual(rdd.collect(), rdd.filter(lambda x: True).collect())
+
+    def test_filter_on_rdd_with_func_returns_filtered_rdd(self):
+        rdd = RDD([1, 2, 3])
+
+        self.assertEqual([2, 3], rdd.filter(lambda x: x > 1).collect())
 
     def test_set_name_sets_name(self):
         rdd = RDD()
@@ -178,9 +243,24 @@ class TestRDD(unittest.TestCase):
 
         self.assertEqual(['b', 'e'], rdd.values().collect())
 
-    # zip
+    def test_zip_of_rdds_returns_zipped_rdd(self):
+        x = RDD([1, 2, 3])
+        y = RDD(['a', 'b', 'c'])
 
-    # zipWithIndex
+        self.assertEqual([(1, 'a'), (2, 'b'), (3, 'c')], x.zip(y).collect())
+
+    def test_zip_of_differing_length_rdds_raises_exception(self):
+        x = RDD([1, 2, 3])
+        y = RDD([1, 2, 3, 4])
+
+        with self.assertRaises(Py4JJavaError) as e:
+            x.zip(y)
+        self.assertEqual(Py4JJavaError, type(e.exception))
+
+    def test_zipwithindex_of_rdds_returns_content_zipped_with_index(self):
+        x = RDD(['a', 'b', 'c'])
+
+        self.assertEqual([('a', 0), ('b', 1), ('c', 2)], x.zipWithIndex().collect())
 
 
 if __name__ == '__main__':

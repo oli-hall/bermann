@@ -122,7 +122,7 @@ class RDD(object):
         for i in self.contents:
             tmp[f(i)].append(i)
 
-        self.contents = [(k, v) for k, v in temp.items()]
+        self.contents = [(k, v) for k, v in tmp.items()]
         return self
 
     def groupByKey(self, numPartitions=None, partitionFunc=portable_hash):
@@ -333,7 +333,7 @@ class RDD(object):
 
     def zip(self, other):
         if len(self.contents) != len(other.contents):
-            raise Py4JJavaError("Can only zip RDDs with same number of elements in each partition")
+            raise Py4JJavaError("Can only zip RDDs with same number of elements in each partition", JavaException(''))
         self.contents = zip(self.contents, other.contents)
         return self
 
@@ -346,3 +346,11 @@ class RDD(object):
 
     def __eq__(self, other):
         return self.name == other.name and self.contents == other.contents
+
+
+class JavaException(Exception):
+    """This class exists solely to allow the creation of Py4JErrors
+    from the RDD.zip() method, as those require an argument with an
+    attribute of _target_id"""
+
+    _target_id = ''
