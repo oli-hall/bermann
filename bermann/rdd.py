@@ -1,6 +1,8 @@
 from pyspark.rdd import portable_hash
 from pyspark.storagelevel import StorageLevel
 
+from functools import reduce
+
 
 class RDD(object):
 
@@ -192,7 +194,8 @@ class RDD(object):
         raise NotImplementedError()
 
     def reduce(self, f):
-        raise NotImplementedError()
+        self.input = reduce(f, self.input)
+        return self
 
     def reduceByKey(self, func, numPartitions=None, partitionFunc=portable_hash):
         raise NotImplementedError()
