@@ -320,7 +320,8 @@ class RDD(object):
         raise NotImplementedError()
 
     def union(self, other):
-        raise NotImplementedError()
+        self.contents = self.contents + other.contents
+        return self
 
     def unpersist(self):
         raise NotImplementedError()
