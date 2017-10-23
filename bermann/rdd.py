@@ -18,7 +18,7 @@ class RDD(object):
         raise NotImplementedError()
 
     def cache(self):
-        raise NotImplementedError()
+        return self
 
     def cartesian(self, other):
         raise NotImplementedError()
@@ -58,9 +58,11 @@ class RDD(object):
 
     def distinct(self, numPartitions=None):
         self.input = list(set(self.input))
+        return self
 
     def filter(self, f):
-        raise NotImplementedError()
+        self.input = filter(f, self.input)
+        return self
 
     def first(self):
         if len(self.input) > 0:
@@ -131,7 +133,7 @@ class RDD(object):
         raise NotImplementedError()
 
     def keys(self):
-        raise NotImplementedError()
+        return self.map(lambda x: x[0])
 
     def leftOuterJoin(self, other, numPartitions=None):
         raise NotImplementedError()
@@ -159,7 +161,7 @@ class RDD(object):
         raise NotImplementedError()
 
     def max(self, key=None):
-        raise NotImplementedError()
+        return max(self.input)
 
     def mean(self):
         raise NotImplementedError()
@@ -168,7 +170,7 @@ class RDD(object):
         raise NotImplementedError()
 
     def min(self, key=None):
-        raise NotImplementedError()
+        return min(self.input)
 
     def name(self):
         return self.name
@@ -291,7 +293,7 @@ class RDD(object):
         raise NotImplementedError()
 
     def values(self):
-        raise NotImplementedError()
+        return self.map(lambda x: x[1])
 
     def variance(self):
         raise NotImplementedError()
