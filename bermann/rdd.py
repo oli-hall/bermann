@@ -1,9 +1,9 @@
+from collections import defaultdict
 from functools import reduce
 
+from py4j.protocol import Py4JJavaError
 from pyspark.rdd import portable_hash
 from pyspark.storagelevel import StorageLevel
-
-from collections import defaultdict
 
 
 # TODO should these operations modify the existing RDD or return a new one with the updated contents?
@@ -332,10 +332,14 @@ class RDD(object):
         raise NotImplementedError()
 
     def zip(self, other):
-        raise NotImplementedError()
+        if len(self.contents) != len(other.contents):
+            raise Py4JJavaError("Can only zip RDDs with same number of elements in each partition")
+        self.contents = zip(self.contents, other.contents)
+        return self
 
     def zipWithIndex(self):
-        raise NotImplementedError()
+        self.contents = [(i, idx) for idx, i in enumerate(self.contents)]
+        return self
 
     def zipWithUniqueId(self):
         raise NotImplementedError()

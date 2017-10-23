@@ -1,7 +1,8 @@
 from setuptools import setup
 
 install_requires = [
-    "pyspark==2.2.0.post0"
+    "pyspark==2.2.0.post0",
+    "py4j==0.10.4"
 ]
 
 test_requires = [
