@@ -42,6 +42,8 @@ To use the Bermann RDD, import the RDD class, and initialise it with the startin
 > rdd = RDD([1, 2, 3])
 > rdd.count()
 3
+> rdd.map(lambda x: x * x).collect()
+[1, 4, 9]
 ``` 
 
 This means if you have methods that take RDDs and modify them, you can now test them by creating Bermann RDDs in your tests, and pass those into the methods to be tested. Then, simply assert that the contents of the RDD are as expected at the end.
