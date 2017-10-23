@@ -1,7 +1,9 @@
+from functools import reduce
+
 from pyspark.rdd import portable_hash
 from pyspark.storagelevel import StorageLevel
 
-from functools import reduce
+from collections import defaultdict
 
 
 class RDD(object):
@@ -108,7 +110,12 @@ class RDD(object):
         raise NotImplementedError()
 
     def groupByKey(self, numPartitions=None, partitionFunc=portable_hash):
-        raise NotImplementedError()
+        tmp = defaultdict(list)
+        for i in self.input:
+            tmp[i[0]].append(i[1])
+
+        self.input = [(k, v) for k, v in tmp.items()]
+        return self
 
     def groupWith(self, other, *others):
         raise NotImplementedError()
