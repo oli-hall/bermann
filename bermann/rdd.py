@@ -160,7 +160,8 @@ class RDD(object):
         raise NotImplementedError()
 
     def mapValues(self, f):
-        raise NotImplementedError()
+        self.input = [(i[0], f(i[1])) for i in self.input]
+        return self
 
     def max(self, key=None):
         if key:
