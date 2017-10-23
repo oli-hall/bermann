@@ -10,7 +10,6 @@ from pyspark.storagelevel import StorageLevel
 class RDD(object):
 
     def __init__(self, content=[], name=None):
-        assert content
         assert isinstance(content, list)
 
         self.contents = content
