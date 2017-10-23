@@ -12,9 +12,25 @@ class TestRDD(unittest.TestCase):
 
         self.assertEqual(rdd, cached)
 
-    # collect
+    def test_collect_empty_rdd_returns_empty_list(self):
+        rdd = RDD()
 
-    # count
+        self.assertEqual([], rdd.collect())
+
+    def test_collect_non_empty_rdd_returns_contents(self):
+        rdd = RDD([1, 2, 3])
+
+        self.assertEqual(rdd.contents, rdd.collect())
+
+    def test_count_empty_rdd_returns_zero(self):
+        rdd = RDD()
+
+        self.assertEqual(0, rdd.count())
+
+    def test_collect_non_empty_rdd_returns_length(self):
+        rdd = RDD([1, 2, 3])
+
+        self.assertEqual(3, rdd.count())
 
     # countByKey
 
