@@ -56,10 +56,18 @@ class RDD(object):
         raise NotImplementedError()
 
     def countByKey(self):
-        raise NotImplementedError()
+        counts = defaultdict(int)
+        for i in self.contents:
+            counts[i[0]] += 1
+
+        return counts
 
     def countByValue(self):
-        raise NotImplementedError()
+        counts = defaultdict(int)
+        for i in self.contents:
+            counts[i] += 1
+
+        return counts
 
     def distinct(self, numPartitions=None):
         self.contents = list(set(self.contents))
