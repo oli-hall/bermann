@@ -6,13 +6,14 @@ from pyspark.storagelevel import StorageLevel
 from collections import defaultdict
 
 
+# TODO should these operations modify the existing RDD or return a new one with the updated contents?
 class RDD(object):
 
-    def __init__(self, input=[], name=None):
-        assert input
-        assert isinstance(input, list)
+    def __init__(self, content=[], name=None):
+        assert content
+        assert isinstance(content, list)
 
-        self.input = input
+        self.contents = content
         self.name = name
 
     def aggregate(self, zeroValue, seqOp, combOp):
@@ -37,7 +38,7 @@ class RDD(object):
         raise NotImplementedError()
 
     def collect(self):
-        return self.input
+        return self.contents
 
     def collectAsMap(self):
         raise NotImplementedError()
@@ -46,7 +47,7 @@ class RDD(object):
         raise NotImplementedError()
 
     def count(self):
-        return len(self.input)
+        return len(self.contents)
 
     def countApprox(self, timeout, confidence=0.95):
         raise NotImplementedError()
@@ -61,16 +62,16 @@ class RDD(object):
         raise NotImplementedError()
 
     def distinct(self, numPartitions=None):
-        self.input = list(set(self.input))
+        self.contents = list(set(self.contents))
         return self
 
     def filter(self, f):
-        self.input = filter(f, self.input)
+        self.contents = filter(f, self.contents)
         return self
 
     def first(self):
-        if len(self.input) > 0:
-            return self.input[0]
+        if len(self.contents) > 0:
+            return self.contents[0]
         raise ValueError("RDD is empty")
 
     def flatMap(self, f, preservesPartitioning=False):
@@ -86,7 +87,8 @@ class RDD(object):
         raise NotImplementedError()
 
     def foreach(self, f):
-        raise NotImplementedError()
+        for i in self.contents:
+            f(i)
 
     def foreachPartition(self, f):
         raise NotImplementedError()
@@ -111,10 +113,10 @@ class RDD(object):
 
     def groupByKey(self, numPartitions=None, partitionFunc=portable_hash):
         tmp = defaultdict(list)
-        for i in self.input:
+        for i in self.contents:
             tmp[i[0]].append(i[1])
 
-        self.input = [(k, v) for k, v in tmp.items()]
+        self.contents = [(k, v) for k, v in tmp.items()]
         return self
 
     def groupWith(self, other, *others):
@@ -130,7 +132,7 @@ class RDD(object):
         raise NotImplementedError()
 
     def isEmpty(self):
-        return len(self.input) == 0
+        return len(self.contents) == 0
 
     def isLocallyCheckpointed(self):
         raise NotImplementedError()
@@ -139,7 +141,7 @@ class RDD(object):
         raise NotImplementedError()
 
     def keyBy(self, f):
-        self.input = [(f(i), i) for i in self.input]
+        self.contents = [(f(i), i) for i in self.contents]
         return self
 
     def keys(self):
@@ -155,7 +157,7 @@ class RDD(object):
         raise NotImplementedError()
 
     def map(self, f, preservesPartitioning=False):
-        self.input = [f(i) for i in self.input]
+        self.contents = [f(i) for i in self.contents]
         return self
 
     def mapPartitions(self, f, preservesPartitioning=False):
@@ -168,13 +170,13 @@ class RDD(object):
         raise NotImplementedError()
 
     def mapValues(self, f):
-        self.input = [(i[0], f(i[1])) for i in self.input]
+        self.contents = [(i[0], f(i[1])) for i in self.contents]
         return self
 
     def max(self, key=None):
         if key:
-            return max(self.input, key=key)
-        return max(self.input)
+            return max(self.contents, key=key)
+        return max(self.contents)
 
     def mean(self):
         raise NotImplementedError()
@@ -184,8 +186,8 @@ class RDD(object):
 
     def min(self, key=None):
         if key:
-            return min(self.input, key=key)
-        return min(self.input)
+            return min(self.contents, key=key)
+        return min(self.contents)
 
     def name(self):
         return self.name
@@ -203,7 +205,7 @@ class RDD(object):
         raise NotImplementedError()
 
     def reduce(self, f):
-        self.input = reduce(f, self.input)
+        self.contents = reduce(f, self.contents)
         return self
 
     def reduceByKey(self, func, numPartitions=None, partitionFunc=portable_hash):
@@ -273,13 +275,13 @@ class RDD(object):
         raise NotImplementedError()
 
     def sum(self):
-        return sum(self.input)
+        return sum(self.contents)
 
     def sumApprox(self, timeout, confidence=0.95):
         raise NotImplementedError()
 
     def take(self, num):
-        return self.input[:num]
+        return self.contents[:num]
 
     def takeOrdered(self, num, key=None):
         raise NotImplementedError()
