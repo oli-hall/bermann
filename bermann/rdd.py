@@ -83,7 +83,8 @@ class RDD(object):
         raise ValueError("RDD is empty")
 
     def flatMap(self, f, preservesPartitioning=False):
-        raise NotImplementedError()
+        self.contents = [v for i in self.contents for v in f(i)]
+        return self
 
     def flatMapValues(self, f):
         raise NotImplementedError()
