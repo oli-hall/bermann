@@ -1,16 +1,27 @@
 from pyspark.storagelevel import StorageLevel
 
 
+# TODO this will require a Row class as well
 class DataFrame(object):
 
-    def __init__(self, input, schema):
-        assert(input)
-        assert(schema)
+    def __init__(self, input={}, schema={}):
+        """
+        Creates a Bermann DataFrame object, given some input, specified
+        as dicts of col_name -> value, and a schema of col_name -> type.
 
-        # TODO validate input against schema?
-        # TODO infer schema?
+        :param input: list of dicts of column_name -> value
+        :param schema: a dict of column_name -> PySpark type
+        """
+        assert isinstance(input, list)
+        assert isinstance(schema, dict)
 
-        self.input = input
+        for r in input:
+            assert isinstance(r, dict)
+            assert len(r) == len(schema)
+            assert r.keys() == schema.keys()
+            # TODO validate input types against schema?
+
+        self.rows = input
         self.schema = schema
 
     def agg(self, *exprs):
