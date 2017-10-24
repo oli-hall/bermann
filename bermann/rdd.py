@@ -227,7 +227,9 @@ class RDD(object):
         raise NotImplementedError()
 
     def rightOuterJoin(self, other, numPartitions=None):
-        raise NotImplementedError()
+        kv = {o[0]: o[1] for o in self.rows}
+
+        return RDD([(r[0], (kv.get(r[0]), r[1])) for r in other.rows])
 
     def sample(self, withReplacement, fraction, seed=None):
         raise NotImplementedError()

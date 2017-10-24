@@ -211,6 +211,12 @@ class TestRDD(unittest.TestCase):
 
         self.assertEqual([('k2', 3), ('k1', 3)], rdd.reduceByKey(add).collect())
 
+    def test_rightouterjoin_returns_right_keys_with_joined_vals(self):
+        x = RDD([('a', 11), ('b', 12)])
+        y = RDD([('b', 21), ('c', 22)])
+
+        self.assertEqual([('b', (12, 21)), ('c', (None, 22))], x.rightOuterJoin(y).collect())
+
     def test_set_name_sets_name(self):
         rdd = RDD()
 
