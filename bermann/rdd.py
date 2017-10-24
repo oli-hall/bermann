@@ -223,7 +223,10 @@ class RDD(object):
         return self
 
     def reduceByKey(self, func, numPartitions=None, partitionFunc=portable_hash):
-        raise NotImplementedError()
+        self.groupByKey(numPartitions=numPartitions, partitionFunc=partitionFunc)
+
+        self.contents = [(k, reduce(func, vs)) for k, vs in self.contents]
+        return self
 
     def reduceByKeyLocally(self, func):
         raise NotImplementedError()
