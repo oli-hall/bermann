@@ -1,4 +1,4 @@
-from bermann import RDD
+from bermann import Broadcast, RDD
 
 
 class SparkContext(object):
@@ -25,7 +25,7 @@ class SparkContext(object):
         raise NotImplementedError()
 
     def broadcast(self, value):
-        return value
+        return Broadcast(value)
 
     def cancelAllJobs(self):
         raise NotImplementedError()
