@@ -1,4 +1,4 @@
-from bermann import Broadcast, RDD
+from bermann import Accumulator, Broadcast, RDD
 
 
 class SparkContext(object):
@@ -10,7 +10,7 @@ class SparkContext(object):
         self.startTime = None
 
     def accumulator(self, value, accum_param=None):
-        raise NotImplementedError()
+        return Accumulator(value)
 
     def addFile(self, path, recursive=False):
         raise NotImplementedError()
