@@ -2,6 +2,7 @@ import unittest
 
 from bermann import RDD
 from py4j.protocol import Py4JJavaError
+from operator import add
 
 
 class TestRDD(unittest.TestCase):
@@ -192,6 +193,11 @@ class TestRDD(unittest.TestCase):
         rdd = RDD([1, 2, 3])
 
         self.assertEqual([2, 3], rdd.filter(lambda x: x > 1).collect())
+
+    def test_reducebykey_on_rdd_returns_rdd_reduced_by_key(self):
+        rdd = RDD([('k1', 1), ('k1', 2), ('k2', 3)])
+
+        self.assertEqual([('k2', 3), ('k1', 3)], rdd.reduceByKey(add).collect())
 
     def test_set_name_sets_name(self):
         rdd = RDD()
