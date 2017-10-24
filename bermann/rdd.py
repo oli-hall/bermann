@@ -165,7 +165,10 @@ class RDD(object):
         return self.map(lambda x: x[0])
 
     def leftOuterJoin(self, other, numPartitions=None):
-        raise NotImplementedError()
+        other_kv = {o[0]: o[1] for o in other.contents}
+
+        self.contents = [(r[0], (r[1], other_kv.get(r[0]))) for r in self.contents]
+        return self
 
     def localCheckpoint(self):
         raise NotImplementedError()
