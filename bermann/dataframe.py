@@ -1,4 +1,5 @@
 from pyspark.storagelevel import StorageLevel
+from bermann import RDD
 
 
 # TODO this will require a Row class as well
@@ -34,7 +35,7 @@ class DataFrame(object):
         raise NotImplementedError()
 
     def cache(self):
-        raise NotImplementedError()
+        return self
 
     def checkpoint(self, eager=True):
         raise NotImplementedError()
@@ -46,13 +47,13 @@ class DataFrame(object):
         raise NotImplementedError()
 
     def columns(self):
-        raise NotImplementedError()
+        return self.schema.keys()
 
     def corr(self, col1, col2, method=None):
         raise NotImplementedError()
 
     def count(self):
-        raise NotImplementedError()
+        return len(self.rows)
 
     def cov(self, col1, col2):
         raise NotImplementedError()
@@ -160,7 +161,7 @@ class DataFrame(object):
         raise NotImplementedError()
 
     def rdd(self):
-        raise NotImplementedError()
+        return RDD([r.values() for r in self.rows])
 
     def registerTempTable(self, name):
         raise NotImplementedError()
@@ -180,11 +181,18 @@ class DataFrame(object):
     def sampleBy(self, col, fractions, seed=None):
         raise NotImplementedError()
 
+    # TODO this is an attribute, not a method
     def schema(self):
         raise NotImplementedError()
 
     def select(self, *cols):
-        raise NotImplementedError()
+        self.schema = self._select(cols, self.schema)
+        self.rows = [self._select(cols, r) for r in self.rows]
+        return self
+
+    @staticmethod
+    def _select(*cols, input):
+        return {c: t for c, t in input if c in cols}
 
     def selectExpr(self, *expr):
         raise NotImplementedError()
@@ -238,7 +246,15 @@ class DataFrame(object):
         raise NotImplementedError()
 
     def withColumnRenamed(self, existing, new):
-        raise NotImplementedError()
+        if existing in self.schema.keys():
+            self.schema[new] = self.schema[existing]
+            del self.schema[existing]
+
+            for r in self.rows:
+                r[new] = r[existing]
+                del r[existing]
+
+        return self
 
     def withWatermark(self, eventTime, delayThreshold):
         raise NotImplementedError()
