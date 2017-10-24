@@ -138,6 +138,12 @@ class TestRDD(unittest.TestCase):
 
         self.assertEqual([('1', 1), ('2', 2), ('3', 3)], rdd.keyBy(lambda x: str(x)).collect())
 
+    def test_join_returns_shared_keys_with_joined_vals(self):
+        x = RDD([('a', 11), ('b', 12)])
+        y = RDD([('b', 21), ('c', 22)])
+
+        self.assertEqual([('b', (12, 21))], x.join(y).collect())
+
     def test_keys_returns_keys_of_kv_rdd(self):
         rdd = RDD([('k1', 'v1'), ('k1', 'v2'), ('k2', 'v3')])
 

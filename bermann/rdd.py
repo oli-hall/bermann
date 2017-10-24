@@ -152,7 +152,10 @@ class RDD(object):
         raise NotImplementedError()
 
     def join(self, other, numPartitions=None):
-        raise NotImplementedError()
+        other_kv = {o[0]: o[1] for o in other.contents}
+
+        self.contents = [(r[0], (r[1], other_kv[r[0]])) for r in self.contents if r[0] in other_kv]
+        return self
 
     def keyBy(self, f):
         self.contents = [(f(i), i) for i in self.contents]
