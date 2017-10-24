@@ -1,3 +1,5 @@
+from pyspark.sql.types import StringType
+
 
 class SQLContext(object):
 
