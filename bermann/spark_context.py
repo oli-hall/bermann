@@ -1,3 +1,4 @@
+from bermann import RDD
 
 
 class SparkContext(object):
@@ -24,7 +25,7 @@ class SparkContext(object):
         raise NotImplementedError()
 
     def broadcast(self, value):
-        raise NotImplementedError()
+        return value
 
     def cancelAllJobs(self):
         raise NotImplementedError()
@@ -36,7 +37,7 @@ class SparkContext(object):
         raise NotImplementedError()
 
     def emptyRDD(self):
-        raise NotImplementedError()
+        return RDD()
 
     def getConf(self):
         raise NotImplementedError()
@@ -64,7 +65,7 @@ class SparkContext(object):
         raise NotImplementedError()
 
     def parallelize(self, c, numSlices=None):
-        raise NotImplementedError()
+        return RDD(c)
 
     def pickleFile(self, name, minPartitions=None):
         raise NotImplementedError()
