@@ -289,7 +289,9 @@ class RDD(object):
         raise NotImplementedError()
 
     def subtractByKey(self, other, numPartitions=None):
-        raise NotImplementedError()
+        other_keys = other.keys().collect()
+        self.contents = [i for i in self.contents if i[0] not in other_keys]
+        return self
 
     def sum(self):
         return sum(self.contents)

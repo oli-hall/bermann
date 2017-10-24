@@ -209,6 +209,12 @@ class TestRDD(unittest.TestCase):
 
         self.assertEqual(name, rdd.name)
 
+    def test_subtractbykey_on_rdd_returns_keys_not_in_other_rdd(self):
+        rdd = RDD([('k1', 1), ('k2', 2), ('k3', 3)])
+        other = RDD([('k2', 5), ('k4', 7)])
+
+        self.assertEqual([('k1', 1), ('k3', 3)], rdd.subtractByKey(other).collect())
+
     def test_sum_empty_rdd_returns_zero(self):
         self.assertEqual(0, RDD([]).sum())
 
