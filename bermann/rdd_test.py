@@ -22,7 +22,7 @@ class TestRDD(unittest.TestCase):
     def test_collect_non_empty_rdd_returns_contents(self):
         rdd = RDD([1, 2, 3])
 
-        self.assertEqual(rdd.contents, rdd.collect())
+        self.assertEqual(rdd.rows, rdd.collect())
 
     def test_count_empty_rdd_returns_zero(self):
         rdd = RDD()
@@ -241,12 +241,12 @@ class TestRDD(unittest.TestCase):
     def test_take_short_rdd_returns_full_rdd(self):
         rdd = RDD([1, 2, 3])
 
-        self.assertEqual(rdd.contents, rdd.take(10))
+        self.assertEqual(rdd.rows, rdd.take(10))
 
     def test_take_long_rdd_returns_full_rdd(self):
         rdd = RDD(list(range(20)))
 
-        self.assertEqual(rdd.contents[:10], rdd.take(10))
+        self.assertEqual(rdd.rows[:10], rdd.take(10))
 
     def test_union_of_empty_rdds_returns_empty_rdd(self):
         self.assertEqual([], RDD([]).union(RDD([])).collect())

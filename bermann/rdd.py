@@ -12,7 +12,7 @@ class RDD(object):
     def __init__(self, content=[], name=None):
         assert isinstance(content, list)
 
-        self.contents = content
+        self.rows = content
         self.name = name
 
     def aggregate(self, zeroValue, seqOp, combOp):
@@ -37,7 +37,7 @@ class RDD(object):
         raise NotImplementedError()
 
     def collect(self):
-        return self.contents
+        return self.rows
 
     def collectAsMap(self):
         raise NotImplementedError()
@@ -46,7 +46,7 @@ class RDD(object):
         raise NotImplementedError()
 
     def count(self):
-        return len(self.contents)
+        return len(self.rows)
 
     def countApprox(self, timeout, confidence=0.95):
         raise NotImplementedError()
@@ -56,37 +56,37 @@ class RDD(object):
 
     def countByKey(self):
         counts = defaultdict(int)
-        for i in self.contents:
+        for i in self.rows:
             counts[i[0]] += 1
 
         return counts
 
     def countByValue(self):
         counts = defaultdict(int)
-        for i in self.contents:
+        for i in self.rows:
             counts[i] += 1
 
         return counts
 
     def distinct(self, numPartitions=None):
-        self.contents = list(set(self.contents))
+        self.rows = list(set(self.rows))
         return self
 
     def filter(self, f):
-        self.contents = filter(f, self.contents)
+        self.rows = filter(f, self.rows)
         return self
 
     def first(self):
-        if len(self.contents) > 0:
-            return self.contents[0]
+        if len(self.rows) > 0:
+            return self.rows[0]
         raise ValueError("RDD is empty")
 
     def flatMap(self, f, preservesPartitioning=False):
-        self.contents = [v for i in self.contents for v in f(i)]
+        self.rows = [v for i in self.rows for v in f(i)]
         return self
 
     def flatMapValues(self, f):
-        self.contents = [(i[0], v) for i in self.contents for v in f(i[1])]
+        self.rows = [(i[0], v) for i in self.rows for v in f(i[1])]
         return self
 
     def fold(self, zeroValue, op):
@@ -96,7 +96,7 @@ class RDD(object):
         raise NotImplementedError()
 
     def foreach(self, f):
-        for i in self.contents:
+        for i in self.rows:
             f(i)
 
     def foreachPartition(self, f):
@@ -119,18 +119,18 @@ class RDD(object):
 
     def groupBy(self, f, numPartitions=None, partitionFunc=portable_hash):
         tmp = defaultdict(list)
-        for i in self.contents:
+        for i in self.rows:
             tmp[f(i)].append(i)
 
-        self.contents = [(k, v) for k, v in tmp.items()]
+        self.rows = [(k, v) for k, v in tmp.items()]
         return self
 
     def groupByKey(self, numPartitions=None, partitionFunc=portable_hash):
         tmp = defaultdict(list)
-        for i in self.contents:
+        for i in self.rows:
             tmp[i[0]].append(i[1])
 
-        self.contents = [(k, v) for k, v in tmp.items()]
+        self.rows = [(k, v) for k, v in tmp.items()]
         return self
 
     def groupWith(self, other, *others):
@@ -146,7 +146,7 @@ class RDD(object):
         raise NotImplementedError()
 
     def isEmpty(self):
-        return len(self.contents) == 0
+        return len(self.rows) == 0
 
     def isLocallyCheckpointed(self):
         raise NotImplementedError()
@@ -154,11 +154,11 @@ class RDD(object):
     def join(self, other, numPartitions=None):
         other_kv = {o[0]: o[1] for o in other.contents}
 
-        self.contents = [(r[0], (r[1], other_kv[r[0]])) for r in self.contents if r[0] in other_kv]
+        self.rows = [(r[0], (r[1], other_kv[r[0]])) for r in self.rows if r[0] in other_kv]
         return self
 
     def keyBy(self, f):
-        self.contents = [(f(i), i) for i in self.contents]
+        self.rows = [(f(i), i) for i in self.rows]
         return self
 
     def keys(self):
@@ -167,7 +167,7 @@ class RDD(object):
     def leftOuterJoin(self, other, numPartitions=None):
         other_kv = {o[0]: o[1] for o in other.contents}
 
-        self.contents = [(r[0], (r[1], other_kv.get(r[0]))) for r in self.contents]
+        self.rows = [(r[0], (r[1], other_kv.get(r[0]))) for r in self.rows]
         return self
 
     def localCheckpoint(self):
@@ -177,7 +177,7 @@ class RDD(object):
         raise NotImplementedError()
 
     def map(self, f, preservesPartitioning=False):
-        self.contents = [f(i) for i in self.contents]
+        self.rows = [f(i) for i in self.rows]
         return self
 
     def mapPartitions(self, f, preservesPartitioning=False):
@@ -190,13 +190,13 @@ class RDD(object):
         raise NotImplementedError()
 
     def mapValues(self, f):
-        self.contents = [(i[0], f(i[1])) for i in self.contents]
+        self.rows = [(i[0], f(i[1])) for i in self.rows]
         return self
 
     def max(self, key=None):
         if key:
-            return max(self.contents, key=key)
-        return max(self.contents)
+            return max(self.rows, key=key)
+        return max(self.rows)
 
     def mean(self):
         raise NotImplementedError()
@@ -206,8 +206,8 @@ class RDD(object):
 
     def min(self, key=None):
         if key:
-            return min(self.contents, key=key)
-        return min(self.contents)
+            return min(self.rows, key=key)
+        return min(self.rows)
 
     def name(self):
         return self.name
@@ -225,13 +225,13 @@ class RDD(object):
         raise NotImplementedError()
 
     def reduce(self, f):
-        self.contents = reduce(f, self.contents)
+        self.rows = reduce(f, self.rows)
         return self
 
     def reduceByKey(self, func, numPartitions=None, partitionFunc=portable_hash):
         self.groupByKey(numPartitions=numPartitions, partitionFunc=partitionFunc)
 
-        self.contents = [(k, reduce(func, vs)) for k, vs in self.contents]
+        self.rows = [(k, reduce(func, vs)) for k, vs in self.rows]
         return self
 
     def reduceByKeyLocally(self, func):
@@ -296,17 +296,17 @@ class RDD(object):
 
     def subtractByKey(self, other, numPartitions=None):
         other_keys = other.keys().collect()
-        self.contents = [i for i in self.contents if i[0] not in other_keys]
+        self.rows = [i for i in self.rows if i[0] not in other_keys]
         return self
 
     def sum(self):
-        return sum(self.contents)
+        return sum(self.rows)
 
     def sumApprox(self, timeout, confidence=0.95):
         raise NotImplementedError()
 
     def take(self, num):
-        return self.contents[:num]
+        return self.rows[:num]
 
     def takeOrdered(self, num, key=None):
         raise NotImplementedError()
@@ -330,7 +330,7 @@ class RDD(object):
         raise NotImplementedError()
 
     def union(self, other):
-        self.contents = self.contents + other.contents
+        self.rows = self.rows + other.contents
         return self
 
     def unpersist(self):
@@ -343,20 +343,20 @@ class RDD(object):
         raise NotImplementedError()
 
     def zip(self, other):
-        if len(self.contents) != len(other.contents):
+        if len(self.rows) != len(other.contents):
             raise Py4JJavaError("Can only zip RDDs with same number of elements in each partition", JavaException(''))
-        self.contents = zip(self.contents, other.contents)
+        self.rows = zip(self.rows, other.contents)
         return self
 
     def zipWithIndex(self):
-        self.contents = [(i, idx) for idx, i in enumerate(self.contents)]
+        self.rows = [(i, idx) for idx, i in enumerate(self.rows)]
         return self
 
     def zipWithUniqueId(self):
         raise NotImplementedError()
 
     def __eq__(self, other):
-        return self.name == other.name and self.contents == other.contents
+        return self.name == other.name and self.rows == other.contents
 
 
 class JavaException(Exception):
