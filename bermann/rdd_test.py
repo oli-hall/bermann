@@ -14,6 +14,13 @@ class TestRDD(unittest.TestCase):
 
         self.assertEqual(rdd, cached)
 
+    def test_coalesce_is_noop(self):
+        rdd = RDD(*[1, 2, 3])
+
+        coalesced = rdd.coalesce()
+
+        self.assertEqual(rdd, coalesced)
+
     def test_collect_empty_rdd_returns_empty_list(self):
         rdd = RDD()
 

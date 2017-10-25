@@ -6,12 +6,12 @@ from pyspark.rdd import portable_hash
 from pyspark.storagelevel import StorageLevel
 
 
-# TODO should these operations modify the existing RDD or return a new one with the updated contents?
 class RDD(object):
 
     def __init__(self, *rows):
         self.rows = list(rows)
         self.name = None
+        # TODO hold/update number of partitions
 
     def aggregate(self, zeroValue, seqOp, combOp):
         raise NotImplementedError()
@@ -29,7 +29,7 @@ class RDD(object):
         raise NotImplementedError()
 
     def coalesce(self, numPartitions, shuffle=False):
-        raise NotImplementedError()
+        return self
 
     def cogroup(self, other, numPartitions=None):
         raise NotImplementedError()
