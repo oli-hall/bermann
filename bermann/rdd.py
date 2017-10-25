@@ -9,11 +9,9 @@ from pyspark.storagelevel import StorageLevel
 # TODO should these operations modify the existing RDD or return a new one with the updated contents?
 class RDD(object):
 
-    def __init__(self, content=[], name=None):
-        assert isinstance(content, list)
-
-        self.rows = content
-        self.name = name
+    def __init__(self, *rows):
+        self.rows = list(rows)
+        self.name = None
 
     def aggregate(self, zeroValue, seqOp, combOp):
         raise NotImplementedError()
