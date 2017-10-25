@@ -65,7 +65,7 @@ class SparkContext(object):
         raise NotImplementedError()
 
     def parallelize(self, c, numSlices=None):
-        return RDD(c)
+        return RDD(*c)
 
     def pickleFile(self, name, minPartitions=None):
         raise NotImplementedError()
