@@ -1,5 +1,5 @@
 from pyspark.storagelevel import StorageLevel
-from bermann import RDD
+from bermann.rdd import RDD
 
 
 # TODO this will require a Row class as well

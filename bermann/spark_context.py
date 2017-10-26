@@ -1,4 +1,6 @@
-from bermann import Accumulator, Broadcast, RDD
+from bermann.accumulator import Accumulator
+from bermann.broadcast import Broadcast
+from bermann.rdd import RDD
 
 
 class SparkContext(object):
