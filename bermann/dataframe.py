@@ -19,17 +19,17 @@ class DataFrame(object):
 
         if isinstance(input, list):
             rows = input
+            for r in rows:
+                assert isinstance(r, dict)
+                if schema:
+                    assert len(r) == len(schema)
+                    assert r.keys() == schema.keys()
+                    # TODO validate input types against schema?
+                else:
+                    schema = self._schema_from_row(r)
         else:
+            # TODO column names?
             rows = input.rows
-
-        for r in rows:
-            assert isinstance(r, dict)
-            if schema:
-                assert len(r) == len(schema)
-                assert r.keys() == schema.keys()
-                # TODO validate input types against schema?
-            else:
-                schema = self._schema_from_row(r)
 
         self.rows = rows
         self.schema = schema
