@@ -169,9 +169,19 @@ class RDD(object):
         return self.map(lambda x: x[0])
 
     def leftOuterJoin(self, other, numPartitions=None):
-        other_kv = {o[0]: o[1] for o in other.rows}
+        other_kv = defaultdict(list)
+        for o in other.rows:
+            other_kv[o[0]].append(o[1])
 
-        return RDD(*[(r[0], (r[1], other_kv.get(r[0]))) for r in self.rows])
+        joined = []
+        for r in self.rows:
+            if r[0] in other_kv:
+                for v in other_kv[r[0]]:
+                    joined.append((r[0], (r[1], v)))
+            else:
+                joined.append((r[0], (r[1], None)))
+
+        return RDD(*joined)
 
     def localCheckpoint(self):
         raise NotImplementedError()
@@ -239,9 +249,19 @@ class RDD(object):
         raise NotImplementedError()
 
     def rightOuterJoin(self, other, numPartitions=None):
-        kv = {o[0]: o[1] for o in self.rows}
+        kv = defaultdict(list)
+        for o in self.rows:
+            kv[o[0]].append(o[1])
 
-        return RDD(*[(r[0], (kv.get(r[0]), r[1])) for r in other.rows])
+        joined = []
+        for r in other.rows:
+            if r[0] in kv:
+                for v in kv[r[0]]:
+                    joined.append((r[0], (v, r[1])))
+            else:
+                joined.append((r[0], (None, r[1])))
+
+        return RDD(*joined)
 
     def sample(self, withReplacement, fraction, seed=None):
         raise NotImplementedError()

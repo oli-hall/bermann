@@ -170,8 +170,10 @@ class TestRDD(unittest.TestCase):
         y = RDD(*[('a', 21), ('a', 31), ('b', 22), ('c', 23)])
 
         expected = [
-            ('a', (1, 21)), ('a', (1, 31)),
-            ('b', (2, 22)), ('b', (3, 22))
+            ('a', (1, 21)),
+            ('a', (1, 31)),
+            ('b', (2, 22)),
+            ('b', (3, 22))
         ]
         self.assertEqual(expected, x.join(y).collect())
 
@@ -190,6 +192,19 @@ class TestRDD(unittest.TestCase):
         y = RDD(*[('b', 21), ('c', 22)])
 
         self.assertEqual([('a', (11, None)), ('b', (12, 21))], x.leftOuterJoin(y).collect())
+
+    def test_leftouterjoin_returns_shared_keys_with_joined_vals_even_for_repeated_keys(self):
+        x = RDD(*[('a', 1), ('b', 2), ('b', 3), ('d', 4)])
+        y = RDD(*[('a', 21), ('a', 31), ('b', 22), ('c', 23)])
+
+        expected = [
+            ('a', (1, 21)),
+            ('a', (1, 31)),
+            ('b', (2, 22)),
+            ('b', (3, 22)),
+            ('d', (4, None))
+        ]
+        self.assertEqual(expected, x.leftOuterJoin(y).collect())
 
     def test_map_on_rdd_with_identity_func_returns_rdd(self):
         rdd = RDD(*[1, 2, 3])
@@ -248,6 +263,23 @@ class TestRDD(unittest.TestCase):
         y = RDD(*[('b', 21), ('c', 22)])
 
         self.assertEqual([('b', (12, 21)), ('c', (None, 22))], x.rightOuterJoin(y).collect())
+
+    def test_rightouterjoin_returns_shared_keys_with_joined_vals_even_for_repeated_keys(self):
+        x = RDD(*[('a', 1), ('b', 2), ('b', 3), ('d', 4)])
+        y = RDD(*[('a', 21), ('a', 31), ('b', 22), ('c', 23)])
+
+        expected = [
+            ('a', (1, 21)),
+            ('a', (1, 31)),
+            ('c', (None, 23)),
+            ('b', (2, 22)),
+            ('b', (3, 22))
+        ]
+        # TODO tmp fix until python version issues sorted
+        actual = x.rightOuterJoin(y).collect()
+        self.assertEqual(len(expected), len(actual))
+        for exp in expected:
+            self.assertTrue(exp in actual)
 
     def test_set_name_sets_name(self):
         rdd = RDD()
