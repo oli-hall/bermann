@@ -17,9 +17,23 @@ class TestRDD(unittest.TestCase):
     def test_coalesce_is_noop(self):
         rdd = RDD(*[1, 2, 3])
 
-        coalesced = rdd.coalesce()
+        coalesced = rdd.coalesce(100)
 
         self.assertEqual(rdd, coalesced)
+
+    def test_cogroup_returns_right_keys_with_joined_vals(self):
+        y = RDD(*[('a', 21), ('b', 22), ('c', 2323)])
+
+        x = RDD(*[('a', 1), ('b', 2), ('b', 3), ('d', 3242)])
+
+        expected = [
+            ('a', ([1], [21])),
+            ('c', ([], [2323])),
+            ('b', ([2, 3], [22])),
+            ('d', ([3242], []))
+        ]
+
+        self.assertEqual(expected, x.cogroup(y).collect())
 
     def test_collect_empty_rdd_returns_empty_list(self):
         rdd = RDD()

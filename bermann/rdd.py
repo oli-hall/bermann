@@ -32,7 +32,13 @@ class RDD(object):
         return self
 
     def cogroup(self, other, numPartitions=None):
-        raise NotImplementedError()
+        grouped = self.groupByKey()
+        other_grouped = other.groupByKey()
+
+        kv = {o[0]: o[1] for o in grouped.rows}
+        other_kv = {o[0]: o[1] for o in other_grouped.rows}
+
+        return RDD(*[(k, (kv.get(k, []), other_kv.get(k, []))) for k in set(kv.keys() + other_kv.keys())])
 
     def collect(self):
         return self.rows
