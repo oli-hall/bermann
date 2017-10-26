@@ -5,7 +5,7 @@ from bermann.rdd import RDD
 # TODO this will require a Row class as well
 class DataFrame(object):
 
-    def __init__(self, input={}, schema=None):
+    def __init__(self, input=[], schema=None):
         """
         Creates a Bermann DataFrame object, given some input, specified
         as dicts of col_name -> value, and a schema of col_name -> type.
