@@ -13,11 +13,16 @@ class DataFrame(object):
         :param input: list of dicts of column_name -> value
         :param schema: a dict of column_name -> PySpark type
         """
-        assert isinstance(input, list)
+        assert isinstance(input, list) or isinstance(input, RDD)
         if schema:
             assert isinstance(schema, dict)
 
-        for r in input:
+        if isinstance(input, list):
+            rows = input
+        else:
+            rows = input.rows
+
+        for r in rows:
             assert isinstance(r, dict)
             if schema:
                 assert len(r) == len(schema)
@@ -26,7 +31,7 @@ class DataFrame(object):
             else:
                 schema = self._schema_from_row(r)
 
-        self.rows = input
+        self.rows = rows
         self.schema = schema
 
     # TODO this is using Python types, will need to convert to pyspark rypes
