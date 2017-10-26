@@ -2,7 +2,6 @@ from pyspark.storagelevel import StorageLevel
 from bermann.rdd import RDD
 
 
-# TODO this will require a Row class as well
 class DataFrame(object):
 
     def __init__(self, input=[], schema=None):
