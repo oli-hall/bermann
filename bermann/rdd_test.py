@@ -165,6 +165,16 @@ class TestRDD(unittest.TestCase):
 
         self.assertEqual([('b', (12, 21))], x.join(y).collect())
 
+    def test_join_returns_shared_keys_with_joined_vals_even_for_repeated_keys(self):
+        x = RDD(*[('a', 1), ('b', 2), ('b', 3), ('d', 4)])
+        y = RDD(*[('a', 21), ('a', 31), ('b', 22), ('c', 23)])
+
+        expected = [
+            ('a', (1, 21)), ('a', (1, 31)),
+            ('b', (2, 22)), ('b', (3, 22))
+        ]
+        self.assertEqual(expected, x.join(y).collect())
+
     def test_keys_returns_keys_of_kv_rdd(self):
         rdd = RDD(*[('k1', 'v1'), ('k1', 'v2'), ('k2', 'v3')])
 

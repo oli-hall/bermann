@@ -150,9 +150,17 @@ class RDD(object):
         raise NotImplementedError()
 
     def join(self, other, numPartitions=None):
-        other_kv = {o[0]: o[1] for o in other.rows}
+        other_kv = defaultdict(list)
+        for o in other.rows:
+            other_kv[o[0]].append(o[1])
 
-        return RDD(*[(r[0], (r[1], other_kv[r[0]])) for r in self.rows if r[0] in other_kv])
+        joined = []
+        for r in self.rows:
+            if r[0] in other_kv:
+                for v in other_kv[r[0]]:
+                    joined.append((r[0], (r[1], v)))
+
+        return RDD(*joined)
 
     def keyBy(self, f):
         return RDD(*[(f(i), i) for i in self.rows])
