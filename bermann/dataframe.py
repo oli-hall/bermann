@@ -5,7 +5,7 @@ from bermann.rdd import RDD
 # TODO this will require a Row class as well
 class DataFrame(object):
 
-    def __init__(self, input={}, schema={}):
+    def __init__(self, input={}, schema=None):
         """
         Creates a Bermann DataFrame object, given some input, specified
         as dicts of col_name -> value, and a schema of col_name -> type.
@@ -14,16 +14,27 @@ class DataFrame(object):
         :param schema: a dict of column_name -> PySpark type
         """
         assert isinstance(input, list)
-        assert isinstance(schema, dict)
+        if schema:
+            assert isinstance(schema, dict)
 
         for r in input:
             assert isinstance(r, dict)
-            assert len(r) == len(schema)
-            assert r.keys() == schema.keys()
-            # TODO validate input types against schema?
+            if schema:
+                assert len(r) == len(schema)
+                assert r.keys() == schema.keys()
+                # TODO validate input types against schema?
+            else:
+                schema = self._schema_from_row(r)
 
         self.rows = input
         self.schema = schema
+
+    # TODO this is using Python types, will need to convert to pyspark rypes
+    def _schema_from_row(self, row):
+        tmp = {}
+        for k, v in row.items():
+            tmp[k] = type(v)
+        return tmp
 
     def agg(self, *exprs):
         raise NotImplementedError()

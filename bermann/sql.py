@@ -1,5 +1,7 @@
 from pyspark.sql.types import StringType
 
+from bermann.dataframe import DataFrame
+
 
 class SQLContext(object):
 
@@ -15,7 +17,7 @@ class SQLContext(object):
         raise NotImplementedError()
 
     def createDataFrame(self, data, schema=None, samplingRatio=None, verifySchema=True):
-        raise NotImplementedError()
+        return DataFrame(data, schema)
 
     def createExternalTable(self, tableName, path=None, source=None, schema=None, **options):
         raise NotImplementedError()
