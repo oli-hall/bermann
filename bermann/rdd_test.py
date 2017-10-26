@@ -271,6 +271,13 @@ class TestRDD(unittest.TestCase):
 
         self.assertEqual([1, 2, 3, 'a', 'b', 'c', 'd'], x.union(y).collect())
 
+    def test_unpersist_is_noop(self):
+        rdd = RDD(*[1, 2, 3])
+
+        unpersisted = rdd.unpersist()
+
+        self.assertEqual(rdd, unpersisted)
+
     def test_values_returns_value_of_kv_rdd(self):
         rdd = RDD(*[('k1', 'v1'), ('k1', 'v2'), ('k2', 'v3')])
 

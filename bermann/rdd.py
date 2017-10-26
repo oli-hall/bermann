@@ -318,7 +318,7 @@ class RDD(object):
         return RDD(*(self.rows + other.rows))
 
     def unpersist(self):
-        raise NotImplementedError()
+        return self
 
     def values(self):
         return self.map(lambda x: x[1])
