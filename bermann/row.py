@@ -43,3 +43,12 @@ class Row(object):
 
     def __repr__(self):
         return "Row(%s)" % ", ".join("%s=%r" % (k, v) for k, v in self.fields.items())
+
+    def __eq__(self, other):
+        if len(self.fields) != len(other.fields):
+            return False
+        for k, v in self.fields.items():
+            if v != other.fields[k]:
+                return False
+
+        return True
