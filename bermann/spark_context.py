@@ -5,7 +5,9 @@ from bermann.rdd import RDD
 
 class SparkContext(object):
 
-    def __init__(self):
+    def __init__(self, conf=None):
+
+        self.conf = conf or {}
         self.applicationId = None
         self.defaultMinPartitions = None
         self.defaultParallelism = None
@@ -42,7 +44,7 @@ class SparkContext(object):
         return RDD()
 
     def getConf(self):
-        raise NotImplementedError()
+        return self.conf
 
     def getLocalProperty(self, key):
         raise NotImplementedError()
