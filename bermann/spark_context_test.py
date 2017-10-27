@@ -1,7 +1,6 @@
 import unittest
 
 from bermann.spark_context import SparkContext
-from bermann.rdd import RDD
 
 
 class TestSparkContext(unittest.TestCase):
