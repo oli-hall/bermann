@@ -1,7 +1,8 @@
+from pyspark.sql.types import StructType
 from pyspark.storagelevel import StorageLevel
+
 from bermann.rdd import RDD
 from bermann.row import Row
-from pyspark.sql.types import StructType
 
 
 class DataFrame(object):

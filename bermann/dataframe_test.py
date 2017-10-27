@@ -1,9 +1,10 @@
 import unittest
 
-from bermann.row import Row
-from bermann.rdd import RDD
-from bermann.dataframe import DataFrame
 from pyspark.sql.types import StructType, StructField, StringType, IntegerType
+
+from bermann.dataframe import DataFrame
+from bermann.rdd import RDD
+from bermann.row import Row
 
 
 class TestDataFrame(unittest.TestCase):
