@@ -14,60 +14,53 @@ class DataFrame(object):
         :param input: list of dicts of column_name -> value
         :param _parsed_schema: a StructType definition of the DataFrame's schema
         """
-        # TODO this needs a major refactor
-
-        if schema:
-            assert isinstance(schema, StructType)
-            # TODO store nullability of fields
-            self._parsed_schema = self._parse_schema(schema)
-
         if isinstance(input, list):
-            rows = []
-            for r in input:
-                if isinstance(r, dict):
-                    if hasattr(self, '_parsed_schema'):
-                        assert len(r) == len(self._parsed_schema)
-                        assert r.keys() == self._parsed_schema.keys()
-                        # TODO validate input types against schema?
-                    else:
-                        self._parsed_schema = self._schema_from_row(r)
-
-                    rows.append(Row(**r))
-                elif isinstance(r, list) or isinstance(r, tuple):
-                    if schema:
-                        assert len(r) == len(self._parsed_schema)
-                        # TODO validate input types against schema?
-                        inputs = {}
-                        for idx, k in enumerate(self._parsed_schema.keys()):
-                            inputs[k] = r[idx]
-                        rows.append(Row(**inputs))
-                    else:
-                        # TODO nicer exception
-                        raise Exception("Schema must be provided for input of type list/tuple")
-                else:
-                    raise Exception("input rows must of type dict, list or tuple")
-
-            self.rows = rows
-            self.schema = schema
+            self.rows, self.schema = self._parse_from_list(input, schema)
         elif isinstance(input, RDD):
             # TODO deal with RDDs of other types than Row
             self.rows = input.rows
-            if schema:
-                self._parsed_schema = self._parse_schema(schema)
-            else:
-                self._parsed_schema = None
             self.schema = schema
         elif isinstance(input, DataFrame):
             self.rows = input.rows
-            self._parsed_schema = self._parse_schema(input.schema)
             self.schema = input.schema
         else:
             raise Exception("input should be of type list, RDD, or DataFrame")
 
+    def _parse_from_list(self, input_rows, schema=None):
+        # TODO validate presence of schema based on row type
+        # e.g. dict -> can infer schema
+        # tuple/list -> requires schema
+
+        if schema:
+            parsed_schema = self._parse_schema(schema)
+        else:
+            parsed_schema = self._infer_python_schema_from_dict(input_rows[0])
+
+        rows = []
+
+        for r in input_rows:
+            if isinstance(r, dict):
+                assert len(r) == len(parsed_schema)
+                assert sorted(r.keys()) == sorted(parsed_schema.keys())
+                # TODO validate input types against schema?
+
+                rows.append(Row(**r))
+            elif isinstance(r, list) or isinstance(r, tuple):
+                assert len(r) == len(parsed_schema)
+                # TODO validate input types against schema?
+                inputs = {}
+                for idx, k in enumerate(parsed_schema.keys()):
+                    inputs[k] = r[idx]
+                rows.append(Row(**inputs))
+            else:
+                raise Exception("input rows must of type dict, list or tuple")
+
+        return rows, schema
+
     def _parse_schema(self, schema):
         """
         Convert a Spark schema (StructType) to a dict
-        of key: value
+        of key -> Spark datatype
 
         :param schema: spark schema (StructType)
         :return: dict of key: value
@@ -80,8 +73,8 @@ class DataFrame(object):
                 parsed[t.name] = t.dataType
         return parsed
 
-    # TODO this is using Python types, will need to convert to pyspark types
-    def _schema_from_row(self, row):
+    def _infer_python_schema_from_dict(self, row):
+        assert isinstance(row, dict)
         tmp = {}
         for k, v in row.items():
             tmp[k] = type(v)
