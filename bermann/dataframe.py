@@ -1,6 +1,7 @@
 from pyspark.storagelevel import StorageLevel
 from bermann.rdd import RDD
 from bermann.row import Row
+from pyspark.sql.types import StructType
 
 
 class DataFrame(object):
@@ -11,11 +12,13 @@ class DataFrame(object):
         as dicts of col_name -> value, and a schema of col_name -> type.
 
         :param input: list of dicts of column_name -> value
-        :param schema: a dict of column_name -> PySpark type
+        :param schema: a StructType definition of the DataFrame's schema
         """
         assert isinstance(input, list) or isinstance(input, RDD)
         if schema:
-            assert isinstance(schema, dict)
+            assert isinstance(schema, StructType)
+            # TODO store nullability of fields
+            schema = {t.name: t.dataType for t in schema.fields}
 
         if isinstance(input, list):
             rows = []

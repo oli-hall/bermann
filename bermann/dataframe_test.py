@@ -3,6 +3,7 @@ import unittest
 from bermann.row import Row
 from bermann.rdd import RDD
 from bermann.dataframe import DataFrame
+from pyspark.sql.types import StructType, StructField, StringType, IntegerType
 
 
 class TestDataFrame(unittest.TestCase):
@@ -32,10 +33,10 @@ class TestDataFrame(unittest.TestCase):
             ('aa', 456)
         ]
 
-        schema = {
-            'a': str,
-            'b': int
-        }
+        schema = StructType([
+            StructField('a', StringType()),
+            StructField('b', IntegerType())
+        ])
 
         df = DataFrame(input, schema)
 
