@@ -236,7 +236,7 @@ class RDD(object):
         raise NotImplementedError()
 
     def reduce(self, f):
-        return RDD(list(reduce(f, self.rows)))
+        return RDD(*list(reduce(f, self.rows)))
 
     def reduceByKey(self, func, numPartitions=None, partitionFunc=portable_hash):
         grouped = self.groupByKey(numPartitions=numPartitions, partitionFunc=partitionFunc)
