@@ -1,3 +1,5 @@
+from types import GeneratorType
+
 from bermann.accumulator import Accumulator
 from bermann.broadcast import Broadcast
 from bermann.rdd import RDD
@@ -69,6 +71,8 @@ class SparkContext(object):
         raise NotImplementedError()
 
     def parallelize(self, c, numSlices=None):
+        if isinstance(c, GeneratorType):
+            return RDD(*list(c))
         return RDD(*c)
 
     def pickleFile(self, name, minPartitions=None):
