@@ -20,15 +20,29 @@ class DataFrame(object):
         if isinstance(input, list):
             rows = []
             for r in input:
-                assert isinstance(r, dict)
-                if schema:
-                    assert len(r) == len(schema)
-                    assert r.keys() == schema.keys()
-                    # TODO validate input types against schema?
-                else:
-                    schema = self._schema_from_row(r)
+                if isinstance(r, dict):
+                    if schema:
+                        assert len(r) == len(schema)
+                        assert r.keys() == schema.keys()
+                        # TODO validate input types against schema?
+                    else:
+                        schema = self._schema_from_row(r)
 
-                rows.append(Row(**r))
+                    rows.append(Row(**r))
+                elif isinstance(r, list) or isinstance(r, tuple):
+                    if schema:
+                        assert len(r) == len(schema)
+                        # TODO validate input types against schema?
+                        inputs = {}
+                        for idx, k in enumerate(schema.keys()):
+                            inputs[k] = r[idx]
+                        rows.append(Row(**inputs))
+                    else:
+                        # TODO nicer exception
+                        raise Exception("Schema must be provided for input of type list/tuple")
+                else:
+                    raise Exception("input rows must of type dict, list or tuple")
+
         else:
             # TODO deal with RDDs of other types than Row
             rows = input.rows

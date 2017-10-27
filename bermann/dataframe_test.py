@@ -24,3 +24,19 @@ class TestDataFrame(unittest.TestCase):
         df = DataFrame(rdd)
 
         self.assertEqual(df.count(), 2)
+
+    # TODO test tuples with no schema
+    def test_creation_from_rdd_of_tuples(self):
+        input = [
+            ('a', 123),
+            ('aa', 456)
+        ]
+
+        schema = {
+            'a': str,
+            'b': int
+        }
+
+        df = DataFrame(input, schema)
+
+        self.assertEqual(df.count(), 2)
