@@ -368,6 +368,27 @@ class TestRDD(unittest.TestCase):
 
         self.assertEqual([('a', 0), ('b', 1), ('c', 2)], x.zipWithIndex().collect())
 
+    def test_equality_of_rdd_with_non_rdd_fails(self):
+        x = RDD('a', 'b', 'c')
+
+        self.assertNotEqual(123, x)
+        self.assertNotEqual('abc', x)
+
+    def test_equality_of_rdd_with_non_equal_rdd_fails(self):
+        x = RDD('a', 'b', 'c')
+        y = RDD('d', 'e', 'f')
+        z = RDD('a', 'b', 'c')
+        z.setName("Z")
+
+        self.assertNotEqual(x, y)
+        self.assertNotEqual(x, z)
+
+    def test_equality_of_rdd_with_equal_rdd_suceeds(self):
+        x = RDD('a', 'b', 'c')
+        y = RDD('a', 'b', 'c')
+
+        self.assertEqual(x, y)
+
 
 if __name__ == '__main__':
     unittest.main()

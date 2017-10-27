@@ -372,6 +372,8 @@ class RDD(object):
         raise NotImplementedError()
 
     def __eq__(self, other):
+        if not isinstance(other, RDD):
+            return False
         return self.name == other.name and self.rows == other.rows
 
 
