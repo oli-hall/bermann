@@ -14,7 +14,6 @@ class DataFrame(object):
         :param input: list of dicts of column_name -> value
         :param schema: a StructType definition of the DataFrame's schema
         """
-        assert isinstance(input, list) or isinstance(input, RDD)
         if schema:
             assert isinstance(schema, StructType)
             # TODO store nullability of fields
@@ -46,12 +45,18 @@ class DataFrame(object):
                 else:
                     raise Exception("input rows must of type dict, list or tuple")
 
-        else:
+            self.rows = rows
+            self.schema = schema
+        elif isinstance(input, RDD):
             # TODO deal with RDDs of other types than Row
-            rows = input.rows
+            self.rows = input.rows
+            self.schema = schema
+        elif isinstance(input, DataFrame):
+            self.rows = input.rows
+            self.schema = input.schema
+        else:
+            raise Exception("input should be of type list, RDD, or DataFrame")
 
-        self.rows = rows
-        self.schema = schema
 
     # TODO this is using Python types, will need to convert to pyspark types
     def _schema_from_row(self, row):

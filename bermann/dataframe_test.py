@@ -41,3 +41,23 @@ class TestDataFrame(unittest.TestCase):
         df = DataFrame(input, schema)
 
         self.assertEqual(df.count(), 2)
+
+    def test_creation_from_rdd_of_tuples_no_schema_raises_exception(self):
+        input = [
+            ('a', 123),
+            ('aa', 456)
+        ]
+
+        with self.assertRaises(Exception) as e:
+            df = DataFrame(input)
+        self.assertEqual(Exception, type(e.exception))
+
+    def test_creation_from_dataframe(self):
+        df = DataFrame([
+            {'a': 'a', 'b': 123},
+            {'a': 'aa', 'b': 456}
+        ])
+
+        df_2 = DataFrame(df)
+
+        self.assertEqual(df_2.count(), 2)
