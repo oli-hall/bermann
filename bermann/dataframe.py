@@ -1,5 +1,6 @@
 from pyspark.storagelevel import StorageLevel
 from bermann.rdd import RDD
+from bermann.row import Row
 
 
 class DataFrame(object):
@@ -17,8 +18,8 @@ class DataFrame(object):
             assert isinstance(schema, dict)
 
         if isinstance(input, list):
-            rows = input
-            for r in rows:
+            rows = []
+            for r in input:
                 assert isinstance(r, dict)
                 if schema:
                     assert len(r) == len(schema)
@@ -26,14 +27,16 @@ class DataFrame(object):
                     # TODO validate input types against schema?
                 else:
                     schema = self._schema_from_row(r)
+
+                rows.append(Row(**r))
         else:
-            # TODO column names?
+            # TODO deal with RDDs of other types than Row
             rows = input.rows
 
         self.rows = rows
         self.schema = schema
 
-    # TODO this is using Python types, will need to convert to pyspark rypes
+    # TODO this is using Python types, will need to convert to pyspark types
     def _schema_from_row(self, row):
         tmp = {}
         for k, v in row.items():
