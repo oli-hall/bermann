@@ -6,6 +6,7 @@ from pyspark.sql.types import StructType
 
 class DataFrame(object):
 
+    # TODO it would be good to accept RDDs of PySpark Rows as well as bermann Rows
     def __init__(self, input=[], schema=None):
         """
         Creates a Bermann DataFrame object, given some input, specified
@@ -27,29 +28,37 @@ class DataFrame(object):
             raise Exception("input should be of type list, RDD, or DataFrame")
 
     def _parse_from_list(self, input_rows, schema=None):
-        # TODO validate presence of schema based on row type
-        # e.g. dict -> can infer schema
-        # tuple/list -> requires schema
-
-        if schema:
-            parsed_schema = self._parse_schema(schema)
-        else:
-            parsed_schema = self._infer_python_schema_from_dict(input_rows[0])
+        # if schema:
+        #     parsed_schema = self._parse_schema(schema)
+        # else:
+        #     first = input_rows[0]
+        #     if not first:
+        #         raise Exception('Cannot parse schema from blank data')
+        #     if isinstance(first, dict):
+        #         parsed_schema = self._infer_python_schema_from_dict(first)
+        #     elif isinstance(first, Row):
+        #         parsed_schema = self._infer_python_schema_from_row(first)
+        #     else:
+        #         raise Exception('Schema can only be parsed from dict or Row')
 
         rows = []
 
         for r in input_rows:
             if isinstance(r, dict):
-                assert len(r) == len(parsed_schema)
-                assert sorted(r.keys()) == sorted(parsed_schema.keys())
-                # TODO validate input types against schema?
+                # assert len(r) == len(parsed_schema)
+                # assert sorted(r.keys()) == sorted(parsed_schema.keys())
+                # # TODO validate input types against schema?
 
                 rows.append(Row(**r))
             elif isinstance(r, list) or isinstance(r, tuple):
-                assert len(r) == len(parsed_schema)
-                # TODO validate input types against schema?
+                if not schema:
+                    raise Exception("Schema required when creating DataFrame from list of list/tuple")
+                # assert len(r) == len(parsed_schema)
+                # # TODO validate input types against schema?
+                # TODO this won't deal with nested Rows
+                keys = [t.name for t in schema.fields]
                 inputs = {}
-                for idx, k in enumerate(parsed_schema.keys()):
+                for idx, k in enumerate(keys):
                     inputs[k] = r[idx]
                 rows.append(Row(**inputs))
             else:
@@ -75,8 +84,16 @@ class DataFrame(object):
 
     def _infer_python_schema_from_dict(self, row):
         assert isinstance(row, dict)
+        # TODO this is useless. it does nothing
         tmp = {}
         for k, v in row.items():
+            tmp[k] = type(v)
+        return tmp
+
+    def _infer_python_schema_from_row(self, row):
+        assert isinstance(row, Row)
+        tmp = {}
+        for k, v in row.fields():
             tmp[k] = type(v)
         return tmp
 

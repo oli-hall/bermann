@@ -48,9 +48,9 @@ class TestDataFrame(unittest.TestCase):
             ('aa', 456)
         ]
 
-        with self.assertRaises(AssertionError) as e:
+        with self.assertRaises(Exception) as e:
             df = DataFrame(input)
-        self.assertEqual(AssertionError, type(e.exception))
+        self.assertEqual(Exception, type(e.exception))
 
     def test_creation_from_dataframe(self):
         input = [
