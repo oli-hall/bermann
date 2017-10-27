@@ -12,31 +12,33 @@ class DataFrame(object):
         as dicts of col_name -> value, and a schema of col_name -> type.
 
         :param input: list of dicts of column_name -> value
-        :param schema: a StructType definition of the DataFrame's schema
+        :param _parsed_schema: a StructType definition of the DataFrame's schema
         """
+        # TODO this needs a major refactor
+
         if schema:
             assert isinstance(schema, StructType)
             # TODO store nullability of fields
-            schema = {t.name: t.dataType for t in schema.fields}
+            self._parsed_schema = self._parse_schema(schema)
 
         if isinstance(input, list):
             rows = []
             for r in input:
                 if isinstance(r, dict):
-                    if schema:
-                        assert len(r) == len(schema)
-                        assert r.keys() == schema.keys()
+                    if hasattr(self, '_parsed_schema'):
+                        assert len(r) == len(self._parsed_schema)
+                        assert r.keys() == self._parsed_schema.keys()
                         # TODO validate input types against schema?
                     else:
-                        schema = self._schema_from_row(r)
+                        self._parsed_schema = self._schema_from_row(r)
 
                     rows.append(Row(**r))
                 elif isinstance(r, list) or isinstance(r, tuple):
                     if schema:
-                        assert len(r) == len(schema)
+                        assert len(r) == len(self._parsed_schema)
                         # TODO validate input types against schema?
                         inputs = {}
-                        for idx, k in enumerate(schema.keys()):
+                        for idx, k in enumerate(self._parsed_schema.keys()):
                             inputs[k] = r[idx]
                         rows.append(Row(**inputs))
                     else:
@@ -50,13 +52,33 @@ class DataFrame(object):
         elif isinstance(input, RDD):
             # TODO deal with RDDs of other types than Row
             self.rows = input.rows
+            if schema:
+                self._parsed_schema = self._parse_schema(schema)
+            else:
+                self._parsed_schema = None
             self.schema = schema
         elif isinstance(input, DataFrame):
             self.rows = input.rows
+            self._parsed_schema = self._parse_schema(input.schema)
             self.schema = input.schema
         else:
             raise Exception("input should be of type list, RDD, or DataFrame")
 
+    def _parse_schema(self, schema):
+        """
+        Convert a Spark schema (StructType) to a dict
+        of key: value
+
+        :param schema: spark schema (StructType)
+        :return: dict of key: value
+        """
+        parsed = {}
+        for t in schema.fields:
+            if isinstance(t.dataType, StructType):
+                parsed[t.name] = self._parse_schema(t.dataType)
+            else:
+                parsed[t.name] = t.dataType
+        return parsed
 
     # TODO this is using Python types, will need to convert to pyspark types
     def _schema_from_row(self, row):

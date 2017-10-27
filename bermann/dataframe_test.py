@@ -53,11 +53,33 @@ class TestDataFrame(unittest.TestCase):
         self.assertEqual(Exception, type(e.exception))
 
     def test_creation_from_dataframe(self):
-        df = DataFrame([
+        input = [
             {'a': 'a', 'b': 123},
             {'a': 'aa', 'b': 456}
+        ]
+
+        schema = StructType([
+            StructField('a', StringType()),
+            StructField('b', IntegerType())
         ])
+
+        df = DataFrame(input, schema)
 
         df_2 = DataFrame(df)
 
         self.assertEqual(df_2.count(), 2)
+
+    def test_schema_attr_returns_pyspark_schema(self):
+        input = [
+            ('a', 123),
+            ('aa', 456)
+        ]
+
+        schema = StructType([
+            StructField('a', StringType()),
+            StructField('b', IntegerType())
+        ])
+
+        df = DataFrame(input, schema)
+
+        self.assertEqual(df.schema, schema)
