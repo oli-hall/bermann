@@ -1,6 +1,6 @@
 import unittest
 
-from bermann import RDD
+from bermann.rdd import RDD
 from py4j.protocol import Py4JJavaError
 from operator import add
 

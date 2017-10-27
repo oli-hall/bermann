@@ -1,6 +1,6 @@
 import unittest
 
-from bermann import Row
+from bermann.row import Row
 
 
 class TestRow(unittest.TestCase):
