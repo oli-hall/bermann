@@ -256,7 +256,7 @@ class TestRDD(unittest.TestCase):
     def test_reduce_on_rdd_returns_rdd_reduced_to_single_elem(self):
         rdd = RDD(0, 1, 2, 3)
 
-        self.assertEqual([6], rdd.reduce(add).collect())
+        self.assertEqual(6, rdd.reduce(add))
 
     def test_reducebykey_on_rdd_returns_rdd_reduced_by_key(self):
         rdd = RDD(*[('k1', 1), ('k1', 2), ('k2', 3)])
