@@ -5,7 +5,7 @@ from py4j.protocol import Py4JJavaError
 from pyspark.rdd import portable_hash
 from pyspark.storagelevel import StorageLevel
 
-from bermann.dataframe import DataFrame
+from bermann.dataframe import *
 
 
 class RDD(object):
