@@ -5,7 +5,7 @@ from py4j.protocol import Py4JJavaError
 from pyspark.rdd import portable_hash
 from pyspark.storagelevel import StorageLevel
 
-from bermann.dataframe import *
+import bermann.dataframe
 
 
 class RDD(object):
@@ -341,7 +341,7 @@ class RDD(object):
     def toDF(self, schema=None):
         """This isn't technically an RDD method, but is part of Spark implicits, and
         is available on RDDs"""
-        return DataFrame(self.rows, schema=schema)
+        return bermann.dataframe.DataFrame(self.rows, schema=schema)
 
     def toLocalIterator(self):
         raise NotImplementedError()
