@@ -11,6 +11,8 @@ import bermann.spark_context
 
 class RDD(object):
 
+    # TODO support creation from pre-partitioned rows
+    # would prevent recreation of the partitioning every time
     def __init__(self, rows=[], sc=None, numPartitions=None):
         assert isinstance(sc, bermann.spark_context.SparkContext)
 
@@ -56,7 +58,7 @@ class RDD(object):
         return self._toRDD([(k, (kv.get(k, []), other_kv.get(k, []))) for k in set(kv.keys() + other_kv.keys())])
 
     def collect(self):
-        return [i for p in self.rows for i in p]
+        return sorted([i for p in self.rows for i in p])
 
     def collectAsMap(self):
         raise NotImplementedError()
