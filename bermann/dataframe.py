@@ -259,9 +259,10 @@ class DataFrame(object):
         raise NotImplementedError()
 
     def select(self, *cols):
-        self.schema = self._select(self.schema, cols)
-        self.rows = [self._select(r, cols) for r in self.rows]
-        return self
+        return DataFrame(
+            input=[self._select(r, cols) for r in self.rows],
+            schema=self._select(self.schema, cols)
+        )
 
     @staticmethod
     def _select(input, *cols):
