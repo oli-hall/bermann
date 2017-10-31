@@ -216,7 +216,7 @@ class RDD(object):
         return self._toRDD(list(map(f, self.collect())))
 
     def mapPartitions(self, f, preservesPartitioning=False):
-        return self._toRDD([f(p) for p in self.rows])
+        return self._toRDD([m for p in self.rows for m in f(p)])
 
     def mapPartitionsWithIndex(self, f, preservesPartitioning=False):
         raise NotImplementedError()
