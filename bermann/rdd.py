@@ -135,7 +135,7 @@ class RDD(object):
         raise NotImplementedError()
 
     def glom(self):
-        return self.rows
+        return self._toRDD(self.rows)
 
     def groupBy(self, f, numPartitions=None, partitionFunc=portable_hash):
         tmp = defaultdict(list)
@@ -216,7 +216,7 @@ class RDD(object):
         return self._toRDD(list(map(f, self.collect())))
 
     def mapPartitions(self, f, preservesPartitioning=False):
-        return self._toRDD([mapped for p in self.rows for mapped in f(p)])
+        return self._toRDD([f(p) for p in self.rows])
 
     def mapPartitionsWithIndex(self, f, preservesPartitioning=False):
         raise NotImplementedError()

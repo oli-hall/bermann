@@ -225,7 +225,12 @@ class TestRDD(unittest.TestCase):
 
         self.assertEqual([1, 4, 9], rdd.map(lambda x: x * x).collect())
 
-    # TODO test mapPartitions
+    def test_map_partitions_maps_function_across_each_partition(self):
+        rdd = self.sc.parallelize([1, 2, 3, 4, 5, 6])
+
+        expected = [sum(p) for p in rdd.glom().collect()]
+
+        self.assertEqual(sorted(expected), rdd.mapPartitions(sum).collect())
 
     def test_mapvalues_on_rdd_with_func_returns_rdd_of_mapped_elems(self):
         rdd = self.sc.parallelize([('a', 1), ('b', 2), ('c', 3)])
