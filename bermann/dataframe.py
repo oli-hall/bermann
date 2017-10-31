@@ -293,7 +293,7 @@ class DataFrame(object):
         raise NotImplementedError()
 
     def toDF(self, *cols):
-        raise NotImplementedError()
+        return self.select(cols)
 
     def toJSON(self, use_unicode=True):
         raise NotImplementedError()
