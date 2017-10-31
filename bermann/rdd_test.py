@@ -45,9 +45,10 @@ class TestRDD(unittest.TestCase):
         self.assertEqual([], rdd.collect())
 
     def test_collect_non_empty_rdd_returns_contents(self):
-        rdd = self.sc.parallelize([1, 2, 3])
+        input = [1, 2, 3]
+        rdd = self.sc.parallelize(input)
 
-        self.assertEqual(rdd.rows, rdd.collect())
+        self.assertEqual(input, rdd.collect())
 
     def test_count_empty_rdd_returns_zero(self):
         rdd = self.sc.emptyRDD()
@@ -114,7 +115,9 @@ class TestRDD(unittest.TestCase):
     def test_flatmap_on_rdd_with_expanding_func_returns_rdd_of_expanded_elems(self):
         rdd = self.sc.parallelize(['a b c', 'd e f'])
 
-        self.assertEqual(['a', 'b', 'c', 'd', 'e', 'f'], rdd.flatMap(lambda x: x.split()).collect())
+        expected = ['a', 'b', 'c', 'd', 'e', 'f']
+        actual = rdd.flatMap(lambda x: x.split()).collect()
+        self.assertEqual(sorted(expected), sorted(actual))
 
     def test_flatmapvalues_on_rdd_with_identity_func_returns_rdd(self):
         rdd = self.sc.parallelize([('a', 1), ('b', 2), ('c', 3)])
@@ -125,7 +128,8 @@ class TestRDD(unittest.TestCase):
         rdd = self.sc.parallelize([('a', 'a b c'), ('b', 'd e f')])
 
         expected = [('a', 'a'), ('a', 'b'), ('a', 'c'), ('b', 'd'), ('b', 'e'), ('b', 'f')]
-        self.assertEqual(expected, rdd.flatMapValues(lambda x: x.split()).collect())
+        actual = rdd.flatMapValues(lambda x: x.split()).collect()
+        self.assertEqual(sorted(expected), sorted(actual))
 
     def test_foreach_on_rdd_runs_function_but_doesnt_affect_rdd(self):
         items = []
@@ -208,7 +212,8 @@ class TestRDD(unittest.TestCase):
             ('b', (3, 22)),
             ('d', (4, None))
         ]
-        self.assertEqual(expected, x.leftOuterJoin(y).collect())
+        actual = x.leftOuterJoin(y).collect()
+        self.assertEqual(sorted(expected), sorted(actual))
 
     def test_map_on_rdd_with_identity_func_returns_rdd(self):
         rdd = self.sc.parallelize([1, 2, 3])
@@ -265,7 +270,9 @@ class TestRDD(unittest.TestCase):
     def test_reducebykey_on_rdd_returns_rdd_reduced_by_key(self):
         rdd = self.sc.parallelize([('k1', 1), ('k1', 2), ('k2', 3)])
 
-        self.assertEqual([('k2', 3), ('k1', 3)], rdd.reduceByKey(add).collect())
+        expected = [('k2', 3), ('k1', 3)]
+        actual = rdd.reduceByKey(add).collect()
+        self.assertEqual(sorted(expected), sorted(actual))
 
     def test_rightouterjoin_returns_right_keys_with_joined_vals(self):
         x = self.sc.parallelize([('a', 11), ('b', 12)])
@@ -318,14 +325,15 @@ class TestRDD(unittest.TestCase):
         self.assertEqual([], self.sc.emptyRDD().take(10))
 
     def test_take_short_rdd_returns_full_rdd(self):
-        rdd = self.sc.parallelize([1, 2, 3])
+        input = [1, 2, 3]
+        rdd = self.sc.parallelize(input)
 
-        self.assertEqual(rdd.rows, rdd.take(10))
+        self.assertEqual(input, rdd.take(10))
 
-    def test_take_long_rdd_returns_full_rdd(self):
+    def test_take_long_rdd_returns_subset(self):
         rdd = self.sc.parallelize(list(range(20)))
 
-        self.assertEqual(rdd.rows[:10], rdd.take(10))
+        self.assertTrue(len(rdd.take(10)))
 
     def test_union_of_empty_rdds_returns_empty_rdd(self):
         self.assertEqual([], self.sc.emptyRDD().union(self.sc.emptyRDD()).collect())
@@ -334,7 +342,10 @@ class TestRDD(unittest.TestCase):
         x = self.sc.parallelize([1, 2, 3])
         y = self.sc.parallelize(['a', 'b', 'c', 'd'])
 
-        self.assertEqual([1, 2, 3, 'a', 'b', 'c', 'd'], x.union(y).collect())
+        expected = [1, 2, 3, 'a', 'b', 'c', 'd']
+        actual = x.union(y).collect()
+
+        self.assertEqual(sorted(expected), sorted(actual))
 
     def test_unpersist_is_noop(self):
         rdd = self.sc.parallelize([1, 2, 3])

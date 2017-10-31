@@ -20,7 +20,7 @@ class DataFrame(object):
             self.rows, self.schema = self._parse_from_list(input, schema)
         elif isinstance(input, RDD):
             # TODO deal with RDDs of other types than Row
-            self.rows = input.rows
+            self.rows = input.collect()
             self.schema = schema
         elif isinstance(input, DataFrame):
             self.rows = input.rows
