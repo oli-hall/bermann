@@ -23,7 +23,9 @@ class RDD(object):
 
         self.rows = list(rows[i::self.numPartitions] for i in range(self.numPartitions))
 
-    def _toRDD(self, rows):
+    def _toRDD(self, rows, numPartitions=None):
+        if numPartitions:
+            return RDD(rows, self.sc, numPartitions)
         return RDD(rows, self.sc, self.numPartitions)
 
     def aggregate(self, zeroValue, seqOp, combOp):
@@ -266,7 +268,7 @@ class RDD(object):
         raise NotImplementedError()
 
     def repartition(self, numPartitions):
-        raise NotImplementedError()
+        return self._toRDD(self.collect(), numPartitions)
 
     def rightOuterJoin(self, other, numPartitions=None):
         kv = defaultdict(list)

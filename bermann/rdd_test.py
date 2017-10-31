@@ -274,6 +274,15 @@ class TestRDD(unittest.TestCase):
         actual = rdd.reduceByKey(add).collect()
         self.assertEqual(sorted(expected), sorted(actual))
 
+    def test_repartition_updates_partitions(self):
+        rdd = self.sc.parallelize([1, 2, 3, 4])
+
+        self.assertEqual(4, rdd.getNumPartitions())
+
+        repartitioned = rdd.repartition(6)
+
+        self.assertEqual(6, repartitioned.getNumPartitions())
+
     def test_rightouterjoin_returns_right_keys_with_joined_vals(self):
         x = self.sc.parallelize([('a', 11), ('b', 12)])
         y = self.sc.parallelize([('b', 21), ('c', 22)])
