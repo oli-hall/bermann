@@ -225,6 +225,8 @@ class TestRDD(unittest.TestCase):
 
         self.assertEqual([1, 4, 9], rdd.map(lambda x: x * x).collect())
 
+    # TODO test mapPartitions
+
     def test_mapvalues_on_rdd_with_func_returns_rdd_of_mapped_elems(self):
         rdd = self.sc.parallelize([('a', 1), ('b', 2), ('c', 3)])
 
