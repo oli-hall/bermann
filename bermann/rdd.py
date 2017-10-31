@@ -200,8 +200,7 @@ class RDD(object):
         for p in self.rows:
             for r in p:
                 if r[0] in other_kv:
-                    for v in other_kv[r[0]]:
-                        joined.append((r[0], (r[1], v)))
+                    joined += [(r[0], (r[1], v)) for v in other_kv[r[0]]]
                 else:
                     joined.append((r[0], (r[1], None)))
 

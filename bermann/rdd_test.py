@@ -37,7 +37,7 @@ class TestRDD(unittest.TestCase):
             ('d', ([3242], []))
         ]
 
-        self.assertEqual(expected, x.cogroup(y).collect())
+        self.assertEqual(sorted(expected), x.cogroup(y).collect())
 
     def test_collect_empty_rdd_returns_empty_list(self):
         rdd = self.sc.emptyRDD()
@@ -129,7 +129,7 @@ class TestRDD(unittest.TestCase):
 
         expected = [('a', 'a'), ('a', 'b'), ('a', 'c'), ('b', 'd'), ('b', 'e'), ('b', 'f')]
         actual = rdd.flatMapValues(lambda x: x.split()).collect()
-        self.assertEqual(sorted(expected), sorted(actual))
+        self.assertEqual(sorted(expected), actual)
 
     def test_foreach_on_rdd_runs_function_but_doesnt_affect_rdd(self):
         items = []
@@ -150,7 +150,7 @@ class TestRDD(unittest.TestCase):
     def test_groupbykey_on_rdd_returns_rdd_grouped_by_key(self):
         rdd = self.sc.parallelize([('k1', 1), ('k1', 2), ('k2', 3)])
 
-        self.assertEqual([('k2', [3]), ('k1', [1, 2])], rdd.groupByKey().collect())
+        self.assertEqual([('k1', [1, 2]), ('k2', [3])], rdd.groupByKey().collect())
 
     def test_isempty_returns_false_for_non_empty_rdd(self):
         rdd = self.sc.parallelize([('k1', 'v1'), ('k1', 'v2'), ('k2', 'v3')])
@@ -213,7 +213,7 @@ class TestRDD(unittest.TestCase):
             ('d', (4, None))
         ]
         actual = x.leftOuterJoin(y).collect()
-        self.assertEqual(sorted(expected), sorted(actual))
+        self.assertEqual(sorted(expected), actual)
 
     def test_map_on_rdd_with_identity_func_returns_rdd(self):
         rdd = self.sc.parallelize([1, 2, 3])
@@ -274,7 +274,7 @@ class TestRDD(unittest.TestCase):
 
         expected = [('k2', 3), ('k1', 3)]
         actual = rdd.reduceByKey(add).collect()
-        self.assertEqual(sorted(expected), sorted(actual))
+        self.assertEqual(sorted(expected), actual)
 
     def test_repartition_updates_partitions(self):
         rdd = self.sc.parallelize([1, 2, 3, 4])
@@ -356,7 +356,7 @@ class TestRDD(unittest.TestCase):
         expected = [1, 2, 3, 'a', 'b', 'c', 'd']
         actual = x.union(y).collect()
 
-        self.assertEqual(sorted(expected), sorted(actual))
+        self.assertEqual(sorted(expected), actual)
 
     def test_unpersist_is_noop(self):
         rdd = self.sc.parallelize([1, 2, 3])
