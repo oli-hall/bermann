@@ -117,7 +117,7 @@ class DataFrame(object):
         raise NotImplementedError()
 
     def collect(self):
-        raise NotImplementedError()
+        return self.rows
 
     def columns(self):
         return self.schema.keys()
