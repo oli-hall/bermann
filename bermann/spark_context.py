@@ -12,7 +12,10 @@ class SparkContext(object):
         self.conf = conf or {}
         self.applicationId = None
         self.defaultMinPartitions = None
-        self.defaultParallelism = None
+        if "spark.default.parallelism" in self.conf:
+            self.defaultParallelism = int(self.conf["spark.default.parallelism"])
+        else:
+            self.defaultParallelism = None
         self.startTime = None
 
     def accumulator(self, value, accum_param=None):
