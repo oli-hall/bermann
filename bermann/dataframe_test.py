@@ -5,9 +5,14 @@ from pyspark.sql.types import StructType, StructField, StringType, IntegerType
 from bermann.dataframe import DataFrame
 from bermann.rdd import RDD
 from bermann.row import Row
+from bermann.spark_context import SparkContext
 
 
 class TestDataFrame(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        cls.sc = SparkContext()
 
     def test_creation_from_list_of_dicts(self):
         df = DataFrame([
@@ -18,10 +23,10 @@ class TestDataFrame(unittest.TestCase):
         self.assertEqual(df.count(), 2)
 
     def test_creation_from_rdd_of_rows(self):
-        rdd = RDD(
+        rdd = self.sc.parallelize([
             Row(a='a', b=123),
             Row(a='aa', b=456)
-        )
+        ])
 
         df = DataFrame(rdd)
 

@@ -2,10 +2,12 @@ from types import GeneratorType
 
 from bermann.accumulator import Accumulator
 from bermann.broadcast import Broadcast
-from bermann.rdd import RDD
+import bermann.rdd
 
 
 class SparkContext(object):
+
+    DEFAULT_PARTITIONS = 4
 
     def __init__(self, conf=None):
 
@@ -15,7 +17,7 @@ class SparkContext(object):
         if "spark.default.parallelism" in self.conf:
             self.defaultParallelism = int(self.conf["spark.default.parallelism"])
         else:
-            self.defaultParallelism = None
+            self.defaultParallelism = self.DEFAULT_PARTITIONS
         self.startTime = None
 
     def accumulator(self, value, accum_param=None):
@@ -46,7 +48,7 @@ class SparkContext(object):
         raise NotImplementedError()
 
     def emptyRDD(self):
-        return RDD([], sc=self)
+        return bermann.rdd.RDD(sc=self)
 
     def getConf(self):
         return self.conf
@@ -75,8 +77,8 @@ class SparkContext(object):
 
     def parallelize(self, c, numSlices=None):
         if isinstance(c, GeneratorType):
-            return RDD(*list(c), sc=self)
-        return RDD(*c, sc=self)
+            return bermann.rdd.RDD(list(c), sc=self)
+        return bermann.rdd.RDD(c, sc=self)
 
     def pickleFile(self, name, minPartitions=None):
         raise NotImplementedError()

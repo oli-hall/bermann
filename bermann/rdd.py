@@ -6,14 +6,27 @@ from pyspark.rdd import portable_hash
 from pyspark.storagelevel import StorageLevel
 
 import bermann.dataframe
+import bermann.spark_context
+
+import numpy as np
 
 
 class RDD(object):
 
-    def __init__(self, *rows, sc=None):
+    def __init__(self, rows=[], sc=None, numPartitions=None):
+        assert isinstance(sc, bermann.spark_context.SparkContext)
+
         self.rows = list(rows)
         self.name = None
         self.sc = sc
+        if numPartitions:
+           self.numPartitions = numPartitions
+        else:
+            self.numPartitions = sc.defaultParallelism
+        self.partitioning = np.array_split(range(len(rows)), self.numPartitions)
+
+    def toRDD(self, rows):
+        return RDD(rows, self.sc, self.numPartitions)
 
     def aggregate(self, zeroValue, seqOp, combOp):
         raise NotImplementedError()
@@ -40,7 +53,7 @@ class RDD(object):
         kv = {o[0]: o[1] for o in grouped.rows}
         other_kv = {o[0]: o[1] for o in other_grouped.rows}
 
-        return RDD(*[(k, (kv.get(k, []), other_kv.get(k, []))) for k in set(kv.keys() + other_kv.keys())])
+        return self.toRDD([(k, (kv.get(k, []), other_kv.get(k, []))) for k in set(kv.keys() + other_kv.keys())])
 
     def collect(self):
         return self.rows
@@ -75,10 +88,10 @@ class RDD(object):
         return counts
 
     def distinct(self, numPartitions=None):
-        return RDD(*list(set(self.rows)))
+        return self.toRDD(list(set(self.rows)))
 
     def filter(self, f):
-        return RDD(*filter(f, self.rows))
+        return self.toRDD(filter(f, self.rows))
 
     def first(self):
         if len(self.rows) > 0:
@@ -86,10 +99,10 @@ class RDD(object):
         raise ValueError("RDD is empty")
 
     def flatMap(self, f, preservesPartitioning=False):
-        return RDD(*[v for i in self.rows for v in f(i)])
+        return self.toRDD([v for i in self.rows for v in f(i)])
 
     def flatMapValues(self, f):
-        return RDD(*[(i[0], v) for i in self.rows for v in f(i[1])])
+        return self.toRDD([(i[0], v) for i in self.rows for v in f(i[1])])
 
     def fold(self, zeroValue, op):
         raise NotImplementedError()
@@ -111,7 +124,7 @@ class RDD(object):
         raise NotImplementedError()
 
     def getNumPartitions(self):
-        raise NotImplementedError()
+        return self.numPartitions
 
     def getStorageLevel(self):
         raise NotImplementedError()
@@ -124,14 +137,14 @@ class RDD(object):
         for i in self.rows:
             tmp[f(i)].append(i)
 
-        return RDD(*[(k, v) for k, v in tmp.items()])
+        return self.toRDD([(k, v) for k, v in tmp.items()])
 
     def groupByKey(self, numPartitions=None, partitionFunc=portable_hash):
         tmp = defaultdict(list)
         for i in self.rows:
             tmp[i[0]].append(i[1])
 
-        return RDD(*[(k, v) for k, v in tmp.items()])
+        return self.toRDD([(k, v) for k, v in tmp.items()])
 
     def groupWith(self, other, *others):
         raise NotImplementedError()
@@ -162,10 +175,10 @@ class RDD(object):
                 for v in other_kv[r[0]]:
                     joined.append((r[0], (r[1], v)))
 
-        return RDD(*joined)
+        return self.toRDD(joined)
 
     def keyBy(self, f):
-        return RDD(*[(f(i), i) for i in self.rows])
+        return self.toRDD([(f(i), i) for i in self.rows])
 
     def keys(self):
         return self.map(lambda x: x[0])
@@ -183,7 +196,7 @@ class RDD(object):
             else:
                 joined.append((r[0], (r[1], None)))
 
-        return RDD(*joined)
+        return self.toRDD(joined)
 
     def localCheckpoint(self):
         raise NotImplementedError()
@@ -192,7 +205,7 @@ class RDD(object):
         raise NotImplementedError()
 
     def map(self, f, preservesPartitioning=False):
-        return RDD(*[f(i) for i in self.rows])
+        return self.toRDD([f(i) for i in self.rows])
 
     def mapPartitions(self, f, preservesPartitioning=False):
         raise NotImplementedError()
@@ -204,7 +217,7 @@ class RDD(object):
         raise NotImplementedError()
 
     def mapValues(self, f):
-        return RDD(*[(i[0], f(i[1])) for i in self.rows])
+        return self.toRDD([(i[0], f(i[1])) for i in self.rows])
 
     def max(self, key=None):
         if key:
@@ -242,7 +255,7 @@ class RDD(object):
 
     def reduceByKey(self, func, numPartitions=None, partitionFunc=portable_hash):
         grouped = self.groupByKey(numPartitions=numPartitions, partitionFunc=partitionFunc)
-        return RDD(*[(r[0], reduce(func, r[1])) for r in grouped.rows])
+        return self.toRDD([(r[0], reduce(func, r[1])) for r in grouped.rows])
 
     def reduceByKeyLocally(self, func):
         raise NotImplementedError()
@@ -263,7 +276,7 @@ class RDD(object):
             else:
                 joined.append((r[0], (None, r[1])))
 
-        return RDD(*joined)
+        return self.toRDD(joined)
 
     def sample(self, withReplacement, fraction, seed=None):
         raise NotImplementedError()
@@ -318,7 +331,7 @@ class RDD(object):
 
     def subtractByKey(self, other, numPartitions=None):
         other_keys = other.keys().collect()
-        return RDD(*[i for i in self.rows if i[0] not in other_keys])
+        return self.toRDD([i for i in self.rows if i[0] not in other_keys])
 
     def sum(self):
         return sum(self.rows)
@@ -356,7 +369,7 @@ class RDD(object):
         raise NotImplementedError()
 
     def union(self, other):
-        return RDD(*(self.rows + other.rows))
+        return self.toRDD((self.rows + other.rows))
 
     def unpersist(self):
         return self
@@ -370,10 +383,10 @@ class RDD(object):
     def zip(self, other):
         if len(self.rows) != len(other.rows):
             raise Py4JJavaError("Can only zip RDDs with same number of elements in each partition", JavaException(''))
-        return RDD(*zip(self.rows, other.rows))
+        return self.toRDD(zip(self.rows, other.rows))
 
     def zipWithIndex(self):
-        return RDD(*[(i, idx) for idx, i in enumerate(self.rows)])
+        return self.toRDD([(i, idx) for idx, i in enumerate(self.rows)])
 
     def zipWithUniqueId(self):
         raise NotImplementedError()
