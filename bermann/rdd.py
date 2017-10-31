@@ -10,10 +10,10 @@ import bermann.dataframe
 
 class RDD(object):
 
-    def __init__(self, *rows):
+    def __init__(self, *rows, sc=None):
         self.rows = list(rows)
         self.name = None
-        # TODO hold/update number of partitions
+        self.sc = sc
 
     def aggregate(self, zeroValue, seqOp, combOp):
         raise NotImplementedError()

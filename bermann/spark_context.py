@@ -43,7 +43,7 @@ class SparkContext(object):
         raise NotImplementedError()
 
     def emptyRDD(self):
-        return RDD()
+        return RDD([], sc=self)
 
     def getConf(self):
         return self.conf
@@ -72,8 +72,8 @@ class SparkContext(object):
 
     def parallelize(self, c, numSlices=None):
         if isinstance(c, GeneratorType):
-            return RDD(*list(c))
-        return RDD(*c)
+            return RDD(*list(c), sc=self)
+        return RDD(*c, sc=self)
 
     def pickleFile(self, name, minPartitions=None):
         raise NotImplementedError()
