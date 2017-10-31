@@ -254,10 +254,6 @@ class DataFrame(object):
     def sampleBy(self, col, fractions, seed=None):
         raise NotImplementedError()
 
-    # TODO this is an attribute, not a method
-    def schema(self):
-        raise NotImplementedError()
-
     def select(self, *cols):
         return DataFrame(
             input=[self._select(r, cols) for r in self.rows],
