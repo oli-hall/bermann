@@ -136,8 +136,31 @@ class RDD(object):
         raise NotImplementedError()
 
     def fullOuterJoin(self, other, numPartitions=None):
-        # TODO
-        raise NotImplementedError()
+        kv = defaultdict(list)
+        for r in self.collect():
+            kv[r[0]].append(r[1])
+
+        other_kv = defaultdict(list)
+        for o in other.collect():
+            other_kv[o[0]].append(o[1])
+
+        joined = []
+
+        for k in set(kv.keys() + other_kv.keys()):
+            if k in kv:
+                for v in kv[k]:
+                    if k in other_kv:
+                        for v_o in other_kv[k]:
+                            joined.append((k, (v, v_o)))
+                    else:
+                        joined.append((k, (v, None)))
+            else:
+                for v_o in other_kv[k]:
+                    joined.append((k, (None, v_o)))
+
+        return self.from_list(joined,
+                              sc=self.sc,
+                              numPartitions=self.numPartitions)
 
     def getCheckpointFile(self):
         raise NotImplementedError()

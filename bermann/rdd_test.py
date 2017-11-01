@@ -142,6 +142,21 @@ class TestRDD(unittest.TestCase):
         self.assertEqual([1, 2, 3], items)
         self.assertEqual([1, 2, 3], rdd.collect())
 
+    def test_fullouterjoin_returns_shared_keys_with_joined_vals_even_for_repeated_keys(self):
+        x = self.sc.parallelize([('a', 1), ('b', 2), ('b', 3), ('d', 4)])
+        y = self.sc.parallelize([('a', 21), ('a', 31), ('b', 22), ('c', 23)])
+
+        expected = [
+            ('a', (1, 21)),
+            ('a', (1, 31)),
+            ('b', (2, 22)),
+            ('b', (3, 22)),
+            ('c', (None, 23)),
+            ('d', (4, None))
+        ]
+        actual = x.fullOuterJoin(y).collect()
+        self.assertEqual(sorted(expected), actual)
+
     def test_groupby_on_rdd_returns_rdd_grouped_by_function(self):
         rdd = self.sc.parallelize([1, 2, 3])
 
