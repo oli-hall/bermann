@@ -385,7 +385,17 @@ class RDD(object):
         raise NotImplementedError()
 
     def sortByKey(self, ascending=True, numPartitions=None, keyfunc=lambda x: x):
-        raise NotImplementedError()
+        kv = defaultdict(list)
+        for p in self.partitions:
+            for r in p:
+                kv[r[0]].append(r[1])
+
+        keys = {keyfunc(k): k for k in kv.keys()}
+        sorted_keys = sorted(keys, reverse=(not ascending))
+
+        return RDD.from_list([(k, v) for k in sorted_keys for v in kv[keys[k]]],
+                             sc=self.sc,
+                             numPartitions=self.numPartitions)
 
     def stats(self):
         raise NotImplementedError()
