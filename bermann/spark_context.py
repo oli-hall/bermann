@@ -119,7 +119,9 @@ class SparkContext(object):
         raise NotImplementedError()
 
     def union(self, rdds):
-        raise NotImplementedError()
+        if not rdds or len(rdds) < 1:
+            raise ValueError("Can only union a non-empty list of RDDs")
+        return reduce(lambda x, y: x.union(y), rdds)
 
     def wholeTextFiles(self, path, minPartitions=None, use_unicode=True):
         raise NotImplementedError()

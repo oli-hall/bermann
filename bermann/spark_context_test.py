@@ -25,3 +25,28 @@ class TestSparkContext(unittest.TestCase):
         empty = sc.emptyRDD()
         self.assertTrue(isinstance(empty, bermann.rdd.RDD))
         self.assertEqual(0, empty.count())
+
+    def test_union_empty_list_raises_value_error(self):
+        sc = SparkContext()
+
+        with self.assertRaises(ValueError) as e:
+            sc.union([])
+        self.assertEqual(ValueError, type(e.exception))
+
+    def test_union_single_rdd_list_returns_rdd(self):
+        sc = SparkContext()
+
+        rdd = sc.parallelize([1, 2, 3])
+
+        self.assertEqual(rdd.collect(), sc.union([rdd]).collect())
+
+    def test_union_multiple_rdds_returns_contents_unioned_as_new_rdd(self):
+        sc = SparkContext()
+
+        x = sc.parallelize([1, 2, 3])
+        y = sc.parallelize([4, 5, 6])
+
+        expected = [1, 2, 3, 4, 5, 6]
+        self.assertEqual(sorted(expected), sc.union([x, y]).collect())
+
+
