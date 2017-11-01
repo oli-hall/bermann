@@ -18,10 +18,21 @@ class RDD(object):
         if not numPartitions:
             numPartitions = sc.defaultParallelism
 
-        rows = list(input[i::numPartitions] for i in range(numPartitions))
+        rows = RDD._partition(input, numPartitions)
 
         return RDD(rows, sc, numPartitions)
 
+    @staticmethod
+    def _partition(input_lst=[], numPartitions=1):
+        output = []
+        from_idx, to_idx = 0, 0
+        for i in range(numPartitions):
+            partition_len = len(input_lst[i::numPartitions])
+            to_idx += partition_len
+            output.append(input_lst[from_idx:to_idx])
+            from_idx += partition_len
+
+        return output
 
     def __init__(self, rows=None, sc=None, numPartitions=None):
         """
