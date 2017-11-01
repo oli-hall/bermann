@@ -1,7 +1,7 @@
 import unittest
 
 from bermann.spark_context import SparkContext
-
+import bermann.rdd
 
 class TestSparkContext(unittest.TestCase):
 
@@ -18,3 +18,10 @@ class TestSparkContext(unittest.TestCase):
                 yield i
 
         self.assertEqual([0, 1, 2, 3], sc.parallelize(gen_range(4)).collect())
+
+    def test_empty_rdd_returns_empty_rdd(self):
+        sc = SparkContext()
+
+        empty = sc.emptyRDD()
+        self.assertTrue(isinstance(empty, bermann.rdd.RDD))
+        self.assertEqual(0, empty.count())
