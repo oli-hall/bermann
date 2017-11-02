@@ -299,7 +299,8 @@ class RDD(object):
         return self.name
 
     def partitionBy(self, numPartitions, partitionFunc=portable_hash):
-        raise NotImplementedError()
+        # TODO use partitionFunc
+        return self.repartition(numPartitions)
 
     def persist(self, storageLevel=StorageLevel(False, True, False, False, 1)):
         raise NotImplementedError()

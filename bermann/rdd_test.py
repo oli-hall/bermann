@@ -285,6 +285,15 @@ class TestRDD(unittest.TestCase):
 
         self.assertEqual([2, 3], rdd.filter(lambda x: x > 1).collect())
 
+    def test_partitionby_updates_partitions(self):
+        rdd = self.sc.parallelize([1, 2, 3, 4])
+
+        self.assertEqual(4, rdd.getNumPartitions())
+
+        repartitioned = rdd.partitionBy(6)
+
+        self.assertEqual(6, repartitioned.getNumPartitions())
+
     def test_reduce_on_rdd_returns_rdd_reduced_to_single_elem(self):
         rdd = self.sc.parallelize([0, 1, 2, 3])
 
