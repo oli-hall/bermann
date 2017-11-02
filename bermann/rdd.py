@@ -45,12 +45,12 @@ class RDD(object):
         """
 
         self.name = None
-        self.sc = sc
+        self.context = sc
         self.numPartitions = numPartitions
         self.partitions = rows
 
     def _toRDD(self, rows):
-        return RDD(rows, self.sc, self.numPartitions)
+        return RDD(rows, self.context, self.numPartitions)
 
     def aggregate(self, zeroValue, seqOp, combOp):
         raise NotImplementedError()
@@ -78,7 +78,7 @@ class RDD(object):
         other_kv = {o[0]: o[1] for o in other_grouped.collect()}
 
         return RDD.from_list([(k, (kv.get(k, []), other_kv.get(k, []))) for k in set(kv.keys() + other_kv.keys())],
-                             sc=self.sc,
+                             sc=self.context,
                              numPartitions=self.numPartitions)
 
     def collect(self):
@@ -116,7 +116,7 @@ class RDD(object):
         return counts
 
     def distinct(self, numPartitions=None):
-        return RDD.from_list(list(set(self.collect())), sc=self.sc, numPartitions=self.numPartitions)
+        return RDD.from_list(list(set(self.collect())), sc=self.context, numPartitions=self.numPartitions)
 
     def filter(self, f):
         return self._toRDD([list(filter(f, p)) for p in self.partitions])
@@ -170,7 +170,7 @@ class RDD(object):
                     joined.append((k, (None, v_o)))
 
         return self.from_list(joined,
-                              sc=self.sc,
+                              sc=self.context,
                               numPartitions=self.numPartitions)
 
     def getCheckpointFile(self):
@@ -191,7 +191,7 @@ class RDD(object):
             for i in p:
                 tmp[f(i)].append(i)
 
-        return RDD.from_list([(k, v) for k, v in tmp.items()], self.sc, self.numPartitions)
+        return RDD.from_list([(k, v) for k, v in tmp.items()], self.context, self.numPartitions)
 
     def groupByKey(self, numPartitions=None, partitionFunc=portable_hash):
         tmp = defaultdict(list)
@@ -199,7 +199,7 @@ class RDD(object):
             for i in p:
                 tmp[i[0]].append(i[1])
 
-        return self.from_list([(k, v) for k, v in tmp.items()], self.sc, self.numPartitions)
+        return self.from_list([(k, v) for k, v in tmp.items()], self.context, self.numPartitions)
 
     def groupWith(self, other, *others):
         raise NotImplementedError()
@@ -324,7 +324,7 @@ class RDD(object):
         if numPartitions == self.numPartitions:
             return self
         return RDD.from_list([i for p in self.partitions for i in p],
-                             sc=self.sc,
+                             sc=self.context,
                              numPartitions=numPartitions)
 
     def rightOuterJoin(self, other, numPartitions=None):
@@ -394,7 +394,7 @@ class RDD(object):
         sorted_keys = sorted(keys, reverse=(not ascending))
 
         return RDD.from_list([(k, v) for k in sorted_keys for v in kv[keys[k]]],
-                             sc=self.sc,
+                             sc=self.context,
                              numPartitions=self.numPartitions)
 
     def stats(self):
@@ -498,7 +498,7 @@ class RDD(object):
         return self.name == other.name \
                and self.partitions == other.partitions \
                and self.numPartitions == other.numPartitions \
-               and self.sc == other.sc
+               and self.context == other.sc
 
 
 class JavaException(Exception):
