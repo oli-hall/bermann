@@ -474,6 +474,19 @@ class TestRDD(unittest.TestCase):
 
         self.assertEqual([('a', 0), ('b', 1), ('c', 2)], x.zipWithIndex().collect())
 
+    def test_zipwithuniqueid_of_rdds_returns_content_zipped_with_id(self):
+        x = self.sc.parallelize(['a', 'b', 'c', 'd', 'e', 'f'])
+
+        expected = [
+            ('a', 0),
+            ('b', 4),
+            ('c', 1),
+            ('d', 5),
+            ('e', 2),
+            ('f', 3)
+        ]
+        self.assertEqual(expected, x.zipWithUniqueId().collect())
+
     def test_equality_of_rdd_with_non_rdd_fails(self):
         x = self.sc.parallelize(['a', 'b', 'c'])
 

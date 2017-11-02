@@ -500,7 +500,11 @@ class RDD(object):
         return self._toRDD(zipped)
 
     def zipWithUniqueId(self):
-        raise NotImplementedError()
+        zipped = []
+        for k, p in enumerate(self.partitions):
+            zipped.append([(r, (i * self.numPartitions) + k) for i, r in enumerate(p)])
+
+        return self._toRDD(zipped)
 
     def __eq__(self, other):
         if not isinstance(other, RDD):
