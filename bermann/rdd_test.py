@@ -374,6 +374,21 @@ class TestRDD(unittest.TestCase):
         actual = [i for p in rdd.sortByKey(ascending=False).partitions for i in p]
         self.assertEqual(expected, actual)
 
+    def test_sortby_returns_rdd_sorted_by_keyfunc(self):
+        rdd = self.sc.parallelize([1, 4, 3, 1])
+
+        expected = [1, 1, 3, 4]
+        actual = [i for p in rdd.sortBy(lambda x: x).partitions for i in p]
+        self.assertEqual(expected, actual)
+
+    def test_sortby_descending_returns_rdd_in_reverse_order(self):
+        rdd = self.sc.parallelize([1, 4, 3, 1])
+
+        expected = [4, 3, 1, 1]
+
+        actual = [i for p in rdd.sortBy(lambda x: x, ascending=False).partitions for i in p]
+        self.assertEqual(expected, actual)
+
     def test_subtractbykey_on_rdd_returns_keys_not_in_other_rdd(self):
         rdd = self.sc.parallelize([('k1', 1), ('k2', 2), ('k3', 3)])
         other = self.sc.parallelize([('k2', 5), ('k4', 7)])

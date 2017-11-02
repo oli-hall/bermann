@@ -382,7 +382,16 @@ class RDD(object):
         self.name = name
 
     def sortBy(self, keyfunc, ascending=True, numPartitions=None):
-        raise NotImplementedError()
+        kv = defaultdict(list)
+        for p in self.partitions:
+            for r in p:
+                kv[keyfunc(r)].append(r)
+
+        sorted_keys = sorted(kv, reverse=(not ascending))
+
+        return RDD.from_list([v for k in sorted_keys for v in kv[k]],
+                             sc=self.context,
+                             numPartitions=self.numPartitions)
 
     def sortByKey(self, ascending=True, numPartitions=None, keyfunc=lambda x: x):
         kv = defaultdict(list)
@@ -498,7 +507,7 @@ class RDD(object):
         return self.name == other.name \
                and self.partitions == other.partitions \
                and self.numPartitions == other.numPartitions \
-               and self.context == other.sc
+               and self.context == other.context
 
 
 class JavaException(Exception):
