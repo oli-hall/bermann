@@ -270,6 +270,14 @@ class TestRDD(unittest.TestCase):
         expected = [sum(p) for p in rdd.glom().collect()]
         self.assertEqual(sorted(expected), rdd.mapPartitions(f).collect())
 
+    def test_mappartitionswithindex_maps_function_across_each_partition_with_partition_index(self):
+        rdd = self.sc.parallelize([1, 2, 3, 4, 5, 6])
+
+        def f(p_idx, iterable): yield p_idx, sum(iterable)
+
+        expected = [(idx, sum(p)) for idx, p in enumerate(rdd.glom().collect())]
+        self.assertEqual(sorted(expected), rdd.mapPartitionsWithIndex(f).collect())
+
     def test_mapvalues_on_rdd_with_func_returns_rdd_of_mapped_elems(self):
         rdd = self.sc.parallelize([('a', 1), ('b', 2), ('c', 3)])
 

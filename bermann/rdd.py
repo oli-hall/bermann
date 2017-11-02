@@ -288,7 +288,7 @@ class RDD(object):
         return self._toRDD([[m for m in f(p)] for p in self.partitions])
 
     def mapPartitionsWithIndex(self, f, preservesPartitioning=False):
-        raise NotImplementedError()
+        return self._toRDD([[m for m in f(idx, p)] for idx, p in enumerate(self.partitions)])
 
     def mapPartitionsWithSplit(self, f, preservesPartitioning=False):
         raise NotImplementedError()
