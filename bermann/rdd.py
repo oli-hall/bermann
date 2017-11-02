@@ -8,6 +8,7 @@ from pyspark.storagelevel import StorageLevel
 import bermann.dataframe
 import bermann.spark_context
 
+import random
 
 class RDD(object):
 
@@ -433,7 +434,23 @@ class RDD(object):
         raise NotImplementedError()
 
     def takeSample(self, withReplacement, num, seed=None):
-        raise NotImplementedError()
+        # TODO use seed
+        items = self.collect()
+        if num >= len(items) and not withReplacement:
+            return items
+
+        sample = []
+        if not withReplacement:
+            sampled_idxs = []
+        while len(sample) < num:
+            idx = random.randint(0, len(items) - 1)
+            if not withReplacement:
+                if idx in sampled_idxs:
+                    continue
+                sampled_idxs.append(idx)
+            sample.append(items[idx])
+
+        return sample
 
     def toDebugString(self):
         raise NotImplementedError()

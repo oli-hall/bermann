@@ -426,6 +426,31 @@ class TestRDD(unittest.TestCase):
 
         self.assertTrue(len(rdd.take(10)))
 
+    def test_takesample_small_rdd_returns_all_if_not_with_replacement(self):
+        rdd = self.sc.parallelize(list(range(20)))
+
+
+        expected = list(range(20))
+        self.assertEqual(sorted(expected), rdd.takeSample(False, 30))
+
+    def test_takesample_small_rdd_returns_sample(self):
+        input = list(range(20))
+        rdd = self.sc.parallelize(input)
+
+        sample = rdd.takeSample(True, 30)
+        self.assertEqual(30, len(sample))
+        for s in sample:
+            self.assertTrue(s in input)
+
+    def test_takesample_small_sample_returns_sample(self):
+        input = list(range(20))
+        rdd = self.sc.parallelize(input)
+
+        sample = rdd.takeSample(True, 10)
+        self.assertEqual(10, len(sample))
+        for s in sample:
+            self.assertTrue(s in input)
+
     def test_union_of_empty_rdds_returns_empty_rdd(self):
         self.assertEqual([], self.sc.emptyRDD().union(self.sc.emptyRDD()).collect())
 
