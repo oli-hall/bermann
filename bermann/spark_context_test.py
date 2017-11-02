@@ -19,6 +19,13 @@ class TestSparkContext(unittest.TestCase):
 
         self.assertEqual([0, 1, 2, 3], sc.parallelize(gen_range(4)).collect())
 
+    def test_parallelize_with_slices_sets_num_partitions(self):
+        sc = SparkContext()
+
+        rdd = sc.parallelize([1, 2, 3], 6)
+
+        self.assertEqual(6, rdd.numPartitions)
+
     def test_empty_rdd_returns_empty_rdd(self):
         sc = SparkContext()
 

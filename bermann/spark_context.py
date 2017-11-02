@@ -77,8 +77,8 @@ class SparkContext(object):
 
     def parallelize(self, c, numSlices=None):
         if isinstance(c, GeneratorType):
-            return bermann.rdd.RDD.from_list(list(c), sc=self)
-        return bermann.rdd.RDD.from_list(c, sc=self)
+            return bermann.rdd.RDD.from_list(list(c), sc=self, numPartitions=numSlices)
+        return bermann.rdd.RDD.from_list(c, sc=self, numPartitions=numSlices)
 
     def pickleFile(self, name, minPartitions=None):
         raise NotImplementedError()
