@@ -72,8 +72,8 @@ class RDD(object):
         return self
 
     def cogroup(self, other, numPartitions=None):
-        grouped = self.groupByKey()
-        other_grouped = other.groupByKey()
+        grouped = self.groupByKey(numPartitions)
+        other_grouped = other.groupByKey(numPartitions)
 
         kv = {o[0]: o[1] for o in grouped.collect()}
         other_kv = {o[0]: o[1] for o in other_grouped.collect()}
