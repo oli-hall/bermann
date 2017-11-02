@@ -89,7 +89,23 @@ class RDD(object):
         raise NotImplementedError()
 
     def combineByKey(self, createCombiner, mergeValue, mergeCombiners, numPartitions=None, partitionFunc=portable_hash):
-        raise NotImplementedError()
+        grouped = self.groupByKey(numPartitions, partitionFunc)
+
+        combined = []
+        for p in grouped.partitions:
+            combined_p = []
+            for i in p:
+                k = i[0]
+                vs = i[1]
+                merged = createCombiner(vs[0])
+                for v in vs[1:]:
+                    merged = mergeValue(merged, v)
+                combined_p.append((k, merged))
+
+            combined.append(combined_p)
+
+        return self._toRDD(combined)
+
 
     def count(self):
         return len(self.collect())

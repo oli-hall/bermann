@@ -50,6 +50,28 @@ class TestRDD(unittest.TestCase):
 
         self.assertEqual(input, rdd.collect())
 
+    def test_combinebykey_rdd_returns_combined_contents(self):
+        input = [('a', 1), ('b', 1), ('a', 2)]
+        rdd = self.sc.parallelize(input)
+
+        def to_list(a):
+            return [a]
+
+        def append(a, b):
+            a.append(b)
+            return a
+
+        def extend(a, b):
+            a.extend(b)
+            return a
+
+        expected = [
+            ('a', [1, 2]),
+            ('b', [1])
+        ]
+
+        self.assertEqual(expected, rdd.combineByKey(to_list, append, extend).collect())
+
     def test_count_empty_rdd_returns_zero(self):
         rdd = self.sc.emptyRDD()
 
