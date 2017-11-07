@@ -1,3 +1,4 @@
+import random
 from collections import defaultdict
 from functools import reduce
 
@@ -8,8 +9,9 @@ from pyspark.storagelevel import StorageLevel
 import bermann.dataframe
 import bermann.spark_context
 
-import random
+from copy import deepcopy
 
+# TODO need more thorough deep-copying to avoid references being updated inadvertently
 class RDD(object):
 
     @staticmethod
@@ -282,7 +284,7 @@ class RDD(object):
         raise NotImplementedError()
 
     def map(self, f, preservesPartitioning=False):
-        return self._toRDD([list(map(f, p)) for p in self.partitions])
+        return self._toRDD([list(map(f, deepcopy(p))) for p in self.partitions])
 
     def mapPartitions(self, f, preservesPartitioning=False):
         return self._toRDD([[m for m in f(p)] for p in self.partitions])

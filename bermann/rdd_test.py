@@ -262,6 +262,21 @@ class TestRDD(unittest.TestCase):
 
         self.assertEqual([1, 4, 9], rdd.map(lambda x: x * x).collect())
 
+    def test_map_on_rdd_doesnt_affect_original_rdd(self):
+        # uses dicts to test that references aren't copied
+        input = [{'a': 1}, {'a': 2}, {'a': 3}]
+        rdd = self.sc.parallelize(input)
+
+        def square(rec):
+            rec['a'] = rec['a'] ** 2
+            return rec
+
+        mapped = rdd.map(square)
+
+        self.assertEqual([{'a': 1}, {'a': 4}, {'a': 9}], mapped.collect())
+        self.assertEqual([{'a': 1}, {'a': 2}, {'a': 3}], rdd.collect())
+
+
     def test_map_partitions_maps_function_across_each_partition(self):
         rdd = self.sc.parallelize([1, 2, 3, 4, 5, 6])
 
