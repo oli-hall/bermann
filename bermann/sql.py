@@ -5,10 +5,11 @@ from bermann.dataframe import DataFrame
 
 class SQLContext(object):
 
-    def __init__(self):
+    def __init__(self, sc):
         self.read = None
         self.readStream = None
         self.streams = None
+        self.sc = sc
 
     def cacheTable(self, tableName):
         raise NotImplementedError()
@@ -17,7 +18,7 @@ class SQLContext(object):
         raise NotImplementedError()
 
     def createDataFrame(self, data, schema=None, samplingRatio=None, verifySchema=True):
-        return DataFrame(data, schema)
+        return DataFrame.create(data, self.sc, schema)
 
     def createExternalTable(self, tableName, path=None, source=None, schema=None, **options):
         raise NotImplementedError()
@@ -26,6 +27,9 @@ class SQLContext(object):
         raise NotImplementedError()
 
     def getConf(self, key, defaultValue=None):
+        raise NotImplementedError()
+
+    def jsonRDD(self):
         raise NotImplementedError()
 
     def newSession(self):
