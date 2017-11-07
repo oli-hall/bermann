@@ -8,7 +8,7 @@ Currently, Spark, and PySpark in particular, has little support for testing Spar
 
 Bermann essentially replicates Spark constructs, such as RDDs, DataFrames, etc, so that you can test your methods rapidly in pure Python, without needing to spin up an entire Spark cluster.
 
-#### Setup
+### Setup
 
 Clone the repo, create a virtualenv, install the requirements, and you're good to go!
 
@@ -24,7 +24,19 @@ Setuptools should mean you can install directly from GitHub, by putting the foll
 git+git://github.com/oli-hall/bermann.git@<release version>#egg=bermann
 ```
 
-#### Requirements
+### Testing
+
+Bermann currently comes with unit-tests covering all the functions implemented so far. To run them, run:
+
+```bash
+> python -m unittest discover -p *_test.py
+```
+
+The next step will be to hook up coverage to these, and run them with a cleaner command, possibly through SetupTools' built-in test runner.
+
+Ultimately, it'd be really ace to have this run integration tests against Spark itself, where it can run the same commands in Spark and in Bermann, ensuring that the output is the same. This not only would ensure that Bermann performs as expected, but would also catch updates/changes in Spark's behaviour.   
+
+### Requirements
 
 This has been tested with Python 2.7, but should be Python 3 compatible. More thorough testing will follow. It uses the `pyspark` and `py4j` Python libs, but requires no external services to run (that'd be kinda contrary to the spirit of the library!).
 

@@ -10,7 +10,7 @@ test_requires = [
 
 setup(
     name='Bermann',
-    version='0.1.0',
+    version='0.1.2',
     author='Oli Hall',
     author_email='',
     description="Unit testing library for PySpark",
