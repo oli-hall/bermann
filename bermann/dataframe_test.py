@@ -15,7 +15,6 @@ class TestDataFrame(unittest.TestCase):
         cls.sc = SparkContext()
         cls.sql = SQLContext(cls.sc)
 
-    @unittest.skip("skipping until DataFrame support complete")
     def test_creation_from_list_of_dicts(self):
         df = self.sql.createDataFrame([
             {'a': 'a', 'b': 123},
@@ -24,7 +23,6 @@ class TestDataFrame(unittest.TestCase):
 
         self.assertEqual(df.count(), 2)
 
-    @unittest.skip("skipping until DataFrame support complete")
     def test_creation_from_rdd_of_rows(self):
         rdd = self.sc.parallelize([
             Row(a='a', b=123),
@@ -50,7 +48,6 @@ class TestDataFrame(unittest.TestCase):
 
         self.assertEqual(df.count(), 2)
 
-    @unittest.skip("skipping until DataFrame support complete")
     def test_creation_from_rdd_of_tuples_no_schema_raises_exception(self):
         input = [
             ('a', 123),
