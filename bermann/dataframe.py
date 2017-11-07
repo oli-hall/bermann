@@ -7,78 +7,26 @@ from bermann.row import Row
 
 class DataFrame(object):
 
-    @staticmethod
-    def create(data, sc, schema=None):
-        if isinstance(data, list):
-            return DataFrame._from_list(data, sc, schema)
-        elif isinstance(data, RDD):
-            return DataFrame._from_rdd(data, sc, schema)
-        elif isinstance(data, DataFrame):
-            return DataFrame._from_dataframe(data, sc)
-        raise Exception("Unsupported data type {}, should be list, RDD or DataFrame".format(type(data)))
-
-    @staticmethod
-    def _from_list(input_lst, sc, schema=None):
-        rdd = RDD.from_list(input_lst, sc)
-        return DataFrame(rdd, schema=schema)
-
-    @staticmethod
-    def _from_rdd(rdd, sc, schema=None):
-        if schema:
-            if isinstance(schema, StructType):
-                schema = schema
-            elif isinstance(schema, list):
-                # schema is a list of col names
-                # TODO infer types
-                # data can be Row, dict, list, namedtuple, tuple
-                # TODO if data has keys, make sure keys match schema names
-
-                schema = None
-            else:
-                raise Exception("Schema must either be PySpark StructType or list of column names")
-        else:
-            # parse schema (column names and types) from data, which should be
-            # RDD of Row, namedtuple, or dict
-            schema = None
-
-        return DataFrame(rdd, schema=schema)
-
-    @staticmethod
-    def _from_dataframe(df, sc):
-        return DataFrame(df.rdd, schema=df.schema)
-
     # TODO it would be good to accept RDDs of PySpark Rows as well as bermann Rows
-    def __init__(self, rdd=None, schema=None):
+    def __init__(self, input=[], schema=None):
         """
         Creates a Bermann DataFrame object, given some input, specified
         as dicts of col_name -> value, and a schema of col_name -> type.
 
-        :param rdd: RDD of Rows
+        :param input: list of dicts of column_name -> value
         :param _parsed_schema: a StructType definition of the DataFrame's schema
         """
-        assert rdd
-        assert schema
-
-        self.rdd = rdd
-        self.schema = schema
-        # if isinstance(input, list):
-        #     self.rows, self.schema = self._parse_from_list(input, schema)
-        # elif isinstance(input, RDD):
-        #     # TODO deal with RDDs of other types than Row
-        #     self.rows = input.collect()
-        #     self.schema = schema
-        # elif isinstance(input, DataFrame):
-        #     self.rows = input.rows
-        #     self.schema = input.schema
-        # else:
-        #     raise Exception("input should be of type list, RDD, or DataFrame")
-
-    # TODO will this even work? not sure StructType supports attribute-style access
-    def __getattr__(self, item):
-        try:
-            return self.schema[item]
-        except KeyError:
-            raise AttributeError(item)
+        if isinstance(input, list):
+            self.rows, self.schema = self._parse_from_list(input, schema)
+        elif isinstance(input, RDD):
+            # TODO deal with RDDs of other types than Row
+            self.rows = input.collect()
+            self.schema = schema
+        elif isinstance(input, DataFrame):
+            self.rows = input.rows
+            self.schema = input.schema
+        else:
+            raise Exception("input should be of type list, RDD, or DataFrame")
 
     def _parse_from_list(self, input_rows, schema=None):
         # if schema:
@@ -178,7 +126,7 @@ class DataFrame(object):
         raise NotImplementedError()
 
     def count(self):
-        return self.rdd.count()
+        return len(self.rows)
 
     def cov(self, col1, col2):
         raise NotImplementedError()
@@ -308,13 +256,13 @@ class DataFrame(object):
 
     def select(self, *cols):
         return DataFrame(
-            self.rdd.map(lambda r: Row(**self._select(r.fields, cols))),
-            self._select(self.schema, cols)
+            input=[self._select(r, cols) for r in self.rows],
+            schema=self._select(self.schema, cols)
         )
 
     @staticmethod
-    def _select(input_dict, *cols):
-        return {c: t for c, t in input_dict if c in cols}
+    def _select(input, *cols):
+        return {c: t for c, t in input if c in cols}
 
     def selectExpr(self, *expr):
         raise NotImplementedError()

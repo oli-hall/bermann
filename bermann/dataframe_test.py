@@ -3,9 +3,9 @@ import unittest
 from pyspark.sql.types import StructType, StructField, StringType, IntegerType
 
 from bermann.dataframe import DataFrame
+from bermann.rdd import RDD
 from bermann.row import Row
 from bermann.spark_context import SparkContext
-from bermann.sql import SQLContext
 
 
 class TestDataFrame(unittest.TestCase):
@@ -13,10 +13,9 @@ class TestDataFrame(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.sc = SparkContext()
-        cls.sql = SQLContext(cls.sc)
 
     def test_creation_from_list_of_dicts(self):
-        df = self.sql.createDataFrame([
+        df = DataFrame([
             {'a': 'a', 'b': 123},
             {'a': 'aa', 'b': 456}
         ])
@@ -29,10 +28,11 @@ class TestDataFrame(unittest.TestCase):
             Row(a='aa', b=456)
         ])
 
-        df = self.sql.createDataFrame(rdd)
+        df = DataFrame(rdd)
 
         self.assertEqual(df.count(), 2)
 
+    # TODO test tuples with no schema
     def test_creation_from_rdd_of_tuples(self):
         input = [
             ('a', 123),
@@ -44,7 +44,7 @@ class TestDataFrame(unittest.TestCase):
             StructField('b', IntegerType())
         ])
 
-        df = self.sql.createDataFrame(input, schema)
+        df = DataFrame(input, schema)
 
         self.assertEqual(df.count(), 2)
 
@@ -69,9 +69,9 @@ class TestDataFrame(unittest.TestCase):
             StructField('b', IntegerType())
         ])
 
-        df = self.sql.createDataFrame(input, schema)
+        df = DataFrame(input, schema)
 
-        df_2 = self.sql.createDataFrame(df)
+        df_2 = DataFrame(df)
 
         self.assertEqual(df_2.count(), 2)
 
@@ -86,6 +86,6 @@ class TestDataFrame(unittest.TestCase):
             StructField('b', IntegerType())
         ])
 
-        df = self.sql.createDataFrame(input, schema)
+        df = DataFrame(input, schema)
 
         self.assertEqual(df.schema, schema)
