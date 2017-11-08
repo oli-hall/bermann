@@ -1,5 +1,6 @@
 import random
 from collections import defaultdict
+from copy import deepcopy
 from functools import reduce
 
 from py4j.protocol import Py4JJavaError
@@ -9,9 +10,7 @@ from pyspark.storagelevel import StorageLevel
 import bermann.dataframe
 import bermann.spark_context
 
-from copy import deepcopy
 
-# TODO need more thorough deep-copying to avoid references being updated inadvertently
 class RDD(object):
 
     @staticmethod
