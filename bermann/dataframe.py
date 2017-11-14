@@ -1,4 +1,4 @@
-from pyspark.sql.types import StructType
+from pyspark.sql.types import StructType, StructField
 from pyspark.storagelevel import StorageLevel
 
 from bermann.rdd import RDD
@@ -20,13 +20,13 @@ class DataFrame(object):
     @staticmethod
     def _from_list(input_lst, sc, schema=None):
         rdd = RDD.from_list(input_lst, sc)
-        return DataFrame(rdd, schema=schema)
+        return DataFrame.create(rdd, sc, schema=schema)
 
     @staticmethod
     def _from_rdd(rdd, sc, schema=None):
         if schema:
             if isinstance(schema, StructType):
-                schema = schema
+                schema = DataFrame._parse_schema(schema)
             elif isinstance(schema, list):
                 # schema is a list of col names
                 # TODO infer types
@@ -45,7 +45,7 @@ class DataFrame(object):
 
     @staticmethod
     def _from_dataframe(df, sc):
-        return DataFrame(df.rdd, schema=df.schema)
+        return DataFrame(df.rdd, schema=df.parsed_schema)
 
     # TODO it would be good to accept RDDs of PySpark Rows as well as bermann Rows
     def __init__(self, rdd=None, schema=None):
@@ -54,13 +54,14 @@ class DataFrame(object):
         as dicts of col_name -> value, and a schema of col_name -> type.
 
         :param rdd: RDD of Rows
-        :param _parsed_schema: a StructType definition of the DataFrame's schema
+        :param schema: a dict of key -> pyspark.sql DataType definition
+        of the DataFrame's schema
         """
         assert rdd
         assert schema
 
         self.rdd = rdd
-        self.schema = schema
+        self.parsed_schema = schema
         # if isinstance(input, list):
         #     self.rows, self.schema = self._parse_from_list(input, schema)
         # elif isinstance(input, RDD):
@@ -73,7 +74,6 @@ class DataFrame(object):
         # else:
         #     raise Exception("input should be of type list, RDD, or DataFrame")
 
-    # TODO will this even work? not sure StructType supports attribute-style access
     def __getattr__(self, item):
         try:
             return self.schema[item]
@@ -119,7 +119,25 @@ class DataFrame(object):
 
         return rows, schema
 
-    def _parse_schema(self, schema):
+    @property
+    def schema(self):
+        return DataFrame._to_spark_schema(self.parsed_schema)
+
+    @staticmethod
+    def _to_spark_schema(parsed_schema):
+
+        fields = []
+
+        for k, v in parsed_schema.items():
+            if isinstance(v, dict):
+                fields.append(StructField(k, DataFrame._to_spark_schema(v)))
+            else:
+                fields.append(StructField(k, v))
+
+        return StructType(fields)
+
+    @staticmethod
+    def _parse_schema(schema):
         """
         Convert a Spark schema (StructType) to a dict
         of key -> Spark datatype
@@ -130,7 +148,7 @@ class DataFrame(object):
         parsed = {}
         for t in schema.fields:
             if isinstance(t.dataType, StructType):
-                parsed[t.name] = self._parse_schema(t.dataType)
+                parsed[t.name] = DataFrame._parse_schema(t.dataType)
             else:
                 parsed[t.name] = t.dataType
         return parsed
@@ -172,7 +190,7 @@ class DataFrame(object):
         return self.rows
 
     def columns(self):
-        return self.schema.keys()
+        return self.parsed_schema.keys()
 
     def corr(self, col1, col2, method=None):
         raise NotImplementedError()
@@ -229,10 +247,12 @@ class DataFrame(object):
         raise NotImplementedError()
 
     def filter(self, condition):
+        # TODO parse condition
+        # TODO
         raise NotImplementedError()
 
     def first(self):
-        raise NotImplementedError()
+        return self.rdd.first()
 
     def foreach(self, f):
         raise NotImplementedError()
@@ -258,10 +278,10 @@ class DataFrame(object):
     def intersect(self, other):
         raise NotImplementedError()
 
-    def isLocal(self, ):
+    def isLocal(self):
         raise NotImplementedError()
 
-    def isStreaming(self, ):
+    def isStreaming(self):
         raise NotImplementedError()
 
     def join(self, other, on=None, how=None):
@@ -279,14 +299,14 @@ class DataFrame(object):
     def persist(self, storageLevel=StorageLevel(True, True, False, False, 1)):
         raise NotImplementedError()
 
-    def printSchema(self, ):
+    def printSchema(self):
         raise NotImplementedError()
 
     def randomSplit(self, weights, seed=None):
         raise NotImplementedError()
 
     def rdd(self):
-        return RDD([r.values() for r in self.rows])
+        return self.rdd
 
     def registerTempTable(self, name):
         raise NotImplementedError()
@@ -309,7 +329,7 @@ class DataFrame(object):
     def select(self, *cols):
         return DataFrame(
             self.rdd.map(lambda r: Row(**self._select(r.fields, cols))),
-            self._select(self.schema, cols)
+            DataFrame._select(self.parsed_schema, cols)
         )
 
     @staticmethod
@@ -362,7 +382,7 @@ class DataFrame(object):
         raise NotImplementedError()
 
     def where(self, condition):
-        raise NotImplementedError()
+        return self.filter(condition)
 
     def withColumn(self, colName, col):
         raise NotImplementedError()
