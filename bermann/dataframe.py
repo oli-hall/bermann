@@ -388,15 +388,25 @@ class DataFrame(object):
         raise NotImplementedError()
 
     def withColumnRenamed(self, existing, new):
-        if existing in self.schema.keys():
-            self.schema[new] = self.schema[existing]
-            del self.schema[existing]
-
-            for r in self.rows:
-                r[new] = r[existing]
-                del r[existing]
+        if existing in self.parsed_schema.keys():
+            return DataFrame(
+                DataFrame._update_dict(self.parsed_schema, existing, new),
+                self.rdd.map(
+                    lambda r: Row(**DataFrame._update_dict(r.fields, existing, new))
+                )
+            )
 
         return self
+
+    @staticmethod
+    def _update_dict(input, existing, new):
+        output = {}
+        for k, v in input:
+            if k == existing:
+                output[new] = v
+            else:
+                output[k] = v
+        return output
 
     def withWatermark(self, eventTime, delayThreshold):
         raise NotImplementedError()
