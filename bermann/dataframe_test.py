@@ -93,7 +93,22 @@ class TestDataFrame(unittest.TestCase):
 
         self.assertEqual(df.schema, schema)
 
-    # TODO schema
+    def test_schema_returns_pyspark_schema(self):
+        input = [
+            ('a', 123),
+            ('aa', 456)
+        ]
+
+        schema = StructType([
+            StructField('a', StringType()),
+            StructField('b', IntegerType())
+        ])
+
+        df = self.sql.createDataFrame(input, schema)
+
+        df_schema = df.schema
+
+        self.assertEqual(schema, df_schema)
 
     #TODO agg
 
