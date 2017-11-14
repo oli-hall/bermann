@@ -92,3 +92,168 @@ class TestDataFrame(unittest.TestCase):
         df = self.sql.createDataFrame(input, schema)
 
         self.assertEqual(df.schema, schema)
+
+    # TODO schema
+
+    #TODO agg
+
+    #TODO alias
+
+    #TODO approxQuantile
+
+    def test_cache_is_noop(self):
+        input = [
+            ('a', 123),
+            ('aa', 456)
+        ]
+
+        schema = StructType([
+            StructField('a', StringType()),
+            StructField('b', IntegerType())
+        ])
+
+        df = self.sql.createDataFrame(input, schema)
+
+        cached = df.cache()
+
+        self.assertEqual(df, cached)
+
+    #TODO checkpoint
+
+    #TODO coalesce
+
+    #TODO collect
+
+    #TODO columns
+
+    #TODO corr
+
+    #TODO count
+
+    #TODO cov
+
+    #TODO createGlobalTempView
+
+    #TODO createOrReplaceGlobalTempView
+
+    #TODO createOrReplaceTempView
+
+    #TODO createTempView
+
+    #TODO crossJoin
+
+    #TODO crosstab
+
+    #TODO cube
+
+    #TODO describe
+
+    #TODO distinct
+
+    #TODO drop
+
+    #TODO dropDuplicates
+
+    #TODO drop_duplicates
+
+    #TODO dropna
+
+    #TODO explain
+
+    #TODO fillna
+
+    #TODO filter
+
+    #TODO first
+
+    #TODO foreach
+
+    #TODO foreachPartition
+
+    #TODO freqItems
+
+    #TODO groupBy
+
+    #TODO groupby
+
+    #TODO head
+
+    #TODO hint
+
+    #TODO intersect
+
+    #TODO isLocal
+
+    #TODO isStreaming
+
+    #TODO join
+
+    #TODO limit
+
+    #TODO na
+
+    #TODO orderBy
+
+    #TODO persist
+
+    #TODO printSchema
+
+    #TODO randomSplit
+
+    #TODO rdd
+
+    #TODO registerTempTable
+
+    #TODO repartition
+
+    #TODO replace
+
+    #TODO rollup
+
+    #TODO sample
+
+    #TODO sampleBy
+
+    #TODO select
+
+    #TODO selectExpr
+
+    #TODO show
+
+    #TODO sort
+
+    #TODO sortWithinPartitions
+
+    #TODO stat
+
+    #TODO storageLevel
+
+    #TODO subtract
+
+    #TODO take
+
+    #TODO toDF
+
+    #TODO toJSON
+
+    #TODO toLocalIterator
+
+    #TODO toPandas
+
+    #TODO union
+
+    #TODO unionAll
+
+    #TODO unpersist
+
+    #TODO where
+
+    #TODO withColumn
+
+    #TODO withColumnRenamed
+
+    #TODO withWatermark
+
+    #TODO write
+
+    #TODO writeStream
