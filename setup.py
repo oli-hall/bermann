@@ -9,7 +9,7 @@ test_requires = [
 ]
 
 setup(
-    name='Bermann',
+    name='bermann',
     version='0.1.2',
     author='Oli Hall',
     author_email='',
