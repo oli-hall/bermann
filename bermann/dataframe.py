@@ -1,4 +1,5 @@
-from pyspark.sql.types import StructType, StructField
+from pyspark.sql import types
+from pyspark.sql.types import StructField, StructType
 from pyspark.storagelevel import StorageLevel
 
 from bermann.rdd import RDD
@@ -20,20 +21,37 @@ class DataFrame(object):
     @staticmethod
     def _from_list(input_lst, sc, schema=None):
         rdd = RDD.from_list(input_lst, sc)
-        return DataFrame.create(rdd, sc, schema=schema)
+        return DataFrame._from_rdd(rdd, sc, schema=schema)
 
+    # TODO parse RDD items
     @staticmethod
     def _from_rdd(rdd, sc, schema=None):
         if schema:
             if isinstance(schema, StructType):
                 schema = DataFrame._parse_schema(schema)
             elif isinstance(schema, list):
-                # schema is a list of col names
-                # TODO infer types
-                # data can be Row, dict, list, namedtuple, tuple
-                # TODO if data has keys, make sure keys match schema names
+                parsed_schema = {}
 
-                schema = None
+                # TODO use more than first row to infer types
+                first = rdd.first()
+                if isinstance(first, dict):
+                    assert sorted(first.keys()) == sorted(schema)
+                    for k, v in first.items():
+                        parsed_schema[k] = DataFrame.infer_type(v)
+
+                # TODO namedtuple
+
+                elif isinstance(first, Row):
+                    assert sorted(first.fields.keys()) == sorted(schema)
+                    for col in schema:
+                        parsed_schema[col] = DataFrame.infer_type(first[col])
+
+                else:
+                    for idx, col in enumerate(schema):
+                        # this will work for list, tuple
+                        parsed_schema[col] = DataFrame.infer_type(first[idx])
+
+                schema = parsed_schema
             else:
                 raise Exception("Schema must either be PySpark StructType or list of column names")
         else:
@@ -42,6 +60,10 @@ class DataFrame(object):
             schema = None
 
         return DataFrame(rdd, schema=schema)
+
+    @staticmethod
+    def _infer_types(value):
+        return types._infer_type(value)
 
     @staticmethod
     def _from_dataframe(df, sc):
@@ -401,7 +423,7 @@ class DataFrame(object):
     @staticmethod
     def _update_dict(input, existing, new):
         output = {}
-        for k, v in input:
+        for k, v in input.items():
             if k == existing:
                 output[new] = v
             else:

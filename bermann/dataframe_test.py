@@ -266,6 +266,22 @@ class TestDataFrame(unittest.TestCase):
     #TODO withColumn
 
     #TODO withColumnRenamed
+    def test_withcolumnrenamed_renames_column_if_exists(self):
+        input = [
+            ('a', 123),
+            ('aa', 456)
+        ]
+
+        schema = StructType([
+            StructField('a', StringType()),
+            StructField('b', IntegerType())
+        ])
+
+        df = self.sql.createDataFrame(input, schema)
+
+        renamed = df.withColumnRenamed('a', 'new_a')
+
+        self.assertEqual([Row(new_a=123, aa=456)], renamed.rdd.collect())
 
     #TODO withWatermark
 
