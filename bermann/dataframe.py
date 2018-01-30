@@ -201,7 +201,7 @@ class DataFrame(object):
         raise NotImplementedError()
 
     def groupby(self, *cols):
-        raise NotImplementedError()
+        return self.groupBy(*cols)
 
     def head(self, n=None):
         raise NotImplementedError()
