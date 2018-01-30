@@ -229,7 +229,37 @@ class TestDataFrame(unittest.TestCase):
 
     #TODO sampleBy
 
-    #TODO select
+    def test_select_with_subset_returns_subset_of_cols(self):
+        input = [
+            ('aaa', 123)
+        ]
+
+        schema = StructType([
+            StructField('a', StringType()),
+            StructField('b', IntegerType())
+        ])
+
+        df = self.sql.createDataFrame(input, schema)
+
+        selected = df.select('a')
+
+        self.assertEqual([Row(a='aaa')], selected.rdd.collect())
+
+    def test_select_with_superset_returns_cols(self):
+        input = [
+            ('aaa', 123)
+        ]
+
+        schema = StructType([
+            StructField('a', StringType()),
+            StructField('b', IntegerType())
+        ])
+
+        df = self.sql.createDataFrame(input, schema)
+
+        selected = df.select('a', 'b', 'c')
+
+        self.assertEqual([Row(a='aaa', b=123)], selected.rdd.collect())
 
     #TODO selectExpr
 

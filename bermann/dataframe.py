@@ -262,13 +262,9 @@ class DataFrame(object):
 
     def select(self, *cols):
         return DataFrame(
-            self.rdd.map(lambda r: Row(**self._select(r.fields, cols))),
-            DataFrame._select(self.parsed_schema, cols)
+            self.rdd.map(lambda r: Row(**{c: t for c, t in r.asDict().items() if c in cols})),
+            schema=StructType([f for f in self.schema.fields if f.name in cols])
         )
-
-    @staticmethod
-    def _select(input_dict, *cols):
-        return {c: t for c, t in input_dict if c in cols}
 
     def selectExpr(self, *expr):
         raise NotImplementedError()
@@ -300,7 +296,7 @@ class DataFrame(object):
     def toJSON(self, use_unicode=True):
         raise NotImplementedError()
 
-    def toLocalIterator(self, ):
+    def toLocalIterator(self):
         raise NotImplementedError()
 
     def toPandas(self):
