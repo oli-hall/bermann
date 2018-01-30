@@ -50,9 +50,11 @@ class DataFrame(object):
                     assert sorted(first.fields.keys()) == sorted(schema)
                     return DataFrame(rdd, schema=types._infer_schema(first.asDict()))
 
+                elif isinstance(first, basestring) or isinstance(first, int):
+                    raise Exception("Unexpected datatype encountered - should be Row, dict, list or tuple")
+
                 else:
                     # data should be list/tuple
-                    # TODO check rdd is not simple types - int/str/etc
                     assert len(schema) == len(first)
 
                     return DataFrame(
