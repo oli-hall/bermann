@@ -23,43 +23,49 @@ class DataFrame(object):
         rdd = RDD.from_list(input_lst, sc)
         return DataFrame._from_rdd(rdd, sc, schema=schema)
 
-    # TODO parse RDD items
     @staticmethod
     def _from_rdd(rdd, sc, schema=None):
         if schema:
             if isinstance(schema, StructType):
-                schema = DataFrame._parse_schema(schema)
-            elif isinstance(schema, list):
-                parsed_schema = {}
+                first = rdd.first()
+                if isinstance(first, dict):
+                    return DataFrame(rdd.map(lambda i: Row(**i)), schema=schema)
+                elif isinstance(first, Row):
+                    return DataFrame(rdd, schema=schema)
+                else:
+                    cols = [f.name for f in schema.fields]
+                    return DataFrame(rdd.map(lambda i: Row(**dict(zip(cols, i)))), schema=schema)
 
+            elif isinstance(schema, list):
+                # TODO check type of schema items
                 # TODO use more than first row to infer types
                 first = rdd.first()
                 if isinstance(first, dict):
                     assert sorted(first.keys()) == sorted(schema)
-                    for k, v in first.items():
-                        parsed_schema[k] = DataFrame.infer_type(v)
+                    return DataFrame(rdd.map(lambda i: Row(**i)), schema=types._infer_schema(first))
 
                 # TODO namedtuple
 
                 elif isinstance(first, Row):
                     assert sorted(first.fields.keys()) == sorted(schema)
-                    for col in schema:
-                        parsed_schema[col] = DataFrame.infer_type(first[col])
+                    return DataFrame(rdd, schema=types._infer_schema(first.asDict()))
 
                 else:
-                    for idx, col in enumerate(schema):
-                        # this will work for list, tuple
-                        parsed_schema[col] = DataFrame.infer_type(first[idx])
+                    # data should be list/tuple
+                    # TODO check rdd is not simple types - int/str/etc
+                    assert len(schema) == len(first)
 
-                schema = parsed_schema
+                    return DataFrame(
+                        rdd.map(lambda i: Row(**dict(zip(schema, i)))),
+                        schema=types._infer_schema(dict(zip(schema, first)))
+                    )
             else:
                 raise Exception("Schema must either be PySpark StructType or list of column names")
         else:
             # parse schema (column names and types) from data, which should be
             # RDD of Row, namedtuple, or dict
             schema = None
-
-        return DataFrame(rdd, schema=schema)
+            raise NotImplementedError('instantiating DataFrame without schema not yet supported')
 
     @staticmethod
     def _infer_types(value):
@@ -67,7 +73,7 @@ class DataFrame(object):
 
     @staticmethod
     def _from_dataframe(df, sc):
-        return DataFrame(df.rdd, schema=df.parsed_schema)
+        return DataFrame(df.rdd, schema=df.schema)
 
     # TODO it would be good to accept RDDs of PySpark Rows as well as bermann Rows
     def __init__(self, rdd=None, schema=None):
@@ -76,25 +82,15 @@ class DataFrame(object):
         as dicts of col_name -> value, and a schema of col_name -> type.
 
         :param rdd: RDD of Rows
-        :param schema: a dict of key -> pyspark.sql DataType definition
+        # :param schema: a dict of key -> pyspark.sql DataType definition
+
         of the DataFrame's schema
         """
         assert rdd
         assert schema
 
         self.rdd = rdd
-        self.parsed_schema = schema
-        # if isinstance(input, list):
-        #     self.rows, self.schema = self._parse_from_list(input, schema)
-        # elif isinstance(input, RDD):
-        #     # TODO deal with RDDs of other types than Row
-        #     self.rows = input.collect()
-        #     self.schema = schema
-        # elif isinstance(input, DataFrame):
-        #     self.rows = input.rows
-        #     self.schema = input.schema
-        # else:
-        #     raise Exception("input should be of type list, RDD, or DataFrame")
+        self._schema = schema
 
     def __getattr__(self, item):
         try:
@@ -102,93 +98,9 @@ class DataFrame(object):
         except KeyError:
             raise AttributeError(item)
 
-    def _parse_from_list(self, input_rows, schema=None):
-        # if schema:
-        #     parsed_schema = self._parse_schema(schema)
-        # else:
-        #     first = input_rows[0]
-        #     if not first:
-        #         raise Exception('Cannot parse schema from blank data')
-        #     if isinstance(first, dict):
-        #         parsed_schema = self._infer_python_schema_from_dict(first)
-        #     elif isinstance(first, Row):
-        #         parsed_schema = self._infer_python_schema_from_row(first)
-        #     else:
-        #         raise Exception('Schema can only be parsed from dict or Row')
-
-        rows = []
-
-        for r in input_rows:
-            if isinstance(r, dict):
-                # assert len(r) == len(parsed_schema)
-                # assert sorted(r.keys()) == sorted(parsed_schema.keys())
-                # # TODO validate input types against schema?
-
-                rows.append(Row(**r))
-            elif isinstance(r, list) or isinstance(r, tuple):
-                if not schema:
-                    raise Exception("Schema required when creating DataFrame from list of list/tuple")
-                # assert len(r) == len(parsed_schema)
-                # # TODO validate input types against schema?
-                # TODO this won't deal with nested Rows
-                keys = [t.name for t in schema.fields]
-                inputs = {}
-                for idx, k in enumerate(keys):
-                    inputs[k] = r[idx]
-                rows.append(Row(**inputs))
-            else:
-                raise Exception("input rows must of type dict, list or tuple")
-
-        return rows, schema
-
     @property
     def schema(self):
-        return DataFrame._to_spark_schema(self.parsed_schema)
-
-    @staticmethod
-    def _to_spark_schema(parsed_schema):
-
-        fields = []
-
-        for k, v in parsed_schema.items():
-            if isinstance(v, dict):
-                fields.append(StructField(k, DataFrame._to_spark_schema(v)))
-            else:
-                fields.append(StructField(k, v))
-
-        return StructType(fields)
-
-    @staticmethod
-    def _parse_schema(schema):
-        """
-        Convert a Spark schema (StructType) to a dict
-        of key -> Spark datatype
-
-        :param schema: spark schema (StructType)
-        :return: dict of key: value
-        """
-        parsed = {}
-        for t in schema.fields:
-            if isinstance(t.dataType, StructType):
-                parsed[t.name] = DataFrame._parse_schema(t.dataType)
-            else:
-                parsed[t.name] = t.dataType
-        return parsed
-
-    def _infer_python_schema_from_dict(self, row):
-        assert isinstance(row, dict)
-        # TODO this is useless. it does nothing
-        tmp = {}
-        for k, v in row.items():
-            tmp[k] = type(v)
-        return tmp
-
-    def _infer_python_schema_from_row(self, row):
-        assert isinstance(row, Row)
-        tmp = {}
-        for k, v in row.fields():
-            tmp[k] = type(v)
-        return tmp
+        return self._schema
 
     def agg(self, *exprs):
         raise NotImplementedError()
@@ -212,7 +124,7 @@ class DataFrame(object):
         return self.rows
 
     def columns(self):
-        return self.parsed_schema.keys()
+        return [c.name for c in self._schema.fields]
 
     def corr(self, col1, col2, method=None):
         raise NotImplementedError()
@@ -410,18 +322,27 @@ class DataFrame(object):
         raise NotImplementedError()
 
     def withColumnRenamed(self, existing, new):
-        if existing in self.parsed_schema.keys():
+        if existing in self.columns():
+            cols = []
+            for c in self.schema.fields:
+                if c.name == existing:
+                    cols.append(StructField(new, c.dataType, c.nullable))
+                else:
+                    cols.append(c)
+
+            schema = StructType(cols)
+
             return DataFrame(
-                DataFrame._update_dict(self.parsed_schema, existing, new),
                 self.rdd.map(
-                    lambda r: Row(**DataFrame._update_dict(r.fields, existing, new))
-                )
+                    lambda r: Row(**DataFrame._rename_dict_key(r.fields, existing, new))
+                ),
+                schema=schema
             )
 
         return self
 
     @staticmethod
-    def _update_dict(input, existing, new):
+    def _rename_dict_key(input, existing, new):
         output = {}
         for k, v in input.items():
             if k == existing:

@@ -265,11 +265,9 @@ class TestDataFrame(unittest.TestCase):
 
     #TODO withColumn
 
-    #TODO withColumnRenamed
     def test_withcolumnrenamed_renames_column_if_exists(self):
         input = [
-            ('a', 123),
-            ('aa', 456)
+            ('aaa', 123)
         ]
 
         schema = StructType([
@@ -281,7 +279,24 @@ class TestDataFrame(unittest.TestCase):
 
         renamed = df.withColumnRenamed('a', 'new_a')
 
-        self.assertEqual([Row(new_a=123, aa=456)], renamed.rdd.collect())
+        self.assertEqual([Row(new_a='aaa', b=123)], renamed.rdd.collect())
+
+    def test_withcolumnrenamed_noop_if_no_such_column(self):
+        input = [
+            ('aaa', 123)
+        ]
+
+        schema = StructType([
+            StructField('a', StringType()),
+            StructField('b', IntegerType())
+        ])
+
+        df = self.sql.createDataFrame(input, schema)
+
+        renamed = df.withColumnRenamed('c', 'new_c')
+
+        self.assertEqual([Row(a='aaa', b=123)], renamed.rdd.collect())
+
 
     #TODO withWatermark
 
