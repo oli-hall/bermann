@@ -167,7 +167,19 @@ class TestDataFrame(unittest.TestCase):
 
     #TODO corr
 
-    #TODO count
+    def test_count_returns_row_count(self):
+        input = [
+            ('aaa', 123)
+        ]
+
+        schema = StructType([
+            StructField('a', StringType()),
+            StructField('b', IntegerType())
+        ])
+
+        df = self.sql.createDataFrame(input, schema)
+
+        self.assertEqual(1, df.count())
 
     #TODO cov
 
