@@ -66,8 +66,17 @@ class DataFrame(object):
         else:
             # parse schema (column names and types) from data, which should be
             # RDD of Row, namedtuple, or dict
-            schema = None
-            raise NotImplementedError('instantiating DataFrame without schema not yet supported')
+            first = rdd.first()
+
+            if isinstance(first, dict):
+                return DataFrame(rdd.map(lambda i: Row(**i)), schema=types._infer_schema(first))
+
+            # TODO namedtuple
+
+            elif isinstance(first, Row):
+                return DataFrame(rdd, schema=types._infer_schema(first.asDict()))
+            else:
+                raise Exception("Unexpected datatype encountered - should be Row or dict if no schema provided")
 
     @staticmethod
     def _infer_types(value):
