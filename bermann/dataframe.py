@@ -86,12 +86,10 @@ class DataFrame(object):
     def __init__(self, rdd=None, schema=None):
         """
         Creates a Bermann DataFrame object, given some input, specified
-        as dicts of col_name -> value, and a schema of col_name -> type.
+        as an RDD of Rows, and a Spark schema
 
         :param rdd: RDD of Rows
-        # :param schema: a dict of key -> pyspark.sql DataType definition
-
-        of the DataFrame's schema
+        :param schema: StrucType, a PySpark DataFrame schema
         """
         assert rdd
         assert schema
