@@ -45,10 +45,19 @@ class Row(object):
         return "Row(%s)" % ", ".join("%s=%r" % (k, v) for k, v in self.fields.items())
 
     def __eq__(self, other):
-        if len(self.fields) != len(other.fields):
-            return False
-        for k, v in self.fields.items():
-            if v != other.fields[k]:
-                return False
+        return self.fields == other.fields
 
-        return True
+    def __ne__(self, other):
+        return self.fields != other.fields
+
+    def __lt__(self, other):
+        return self.fields < other.fields
+
+    def __le__(self, other):
+        return self.fields <= other.fields
+
+    def __gt__(self, other):
+        return self.fields > other.fields
+
+    def __ge__(self, other):
+        return self.fields >= other.fields

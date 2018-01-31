@@ -73,8 +73,6 @@ class DataFrame(object):
             else:
                 raise Exception("Schema must either be PySpark StructType or list of column names")
         else:
-            # parse schema (column names and types) from data, which should be
-            # RDD of Row, namedtuple, or dict
             first = rdd.first()
 
             if isinstance(first, dict):
@@ -181,10 +179,20 @@ class DataFrame(object):
         raise NotImplementedError()
 
     def dropDuplicates(self, subset=None):
-        raise NotImplementedError()
+        cols = subset if subset else self.columns()
+        deduped = self.rdd\
+            .keyBy(lambda r: ''.join([str(v) for k, v in r.fields.items() if k in cols]))\
+            .groupByKey()\
+            .values()\
+            .map(lambda vs: list(vs)[0])
+
+        return DataFrame(
+            deduped,
+            schema=self.schema
+        )
 
     def drop_duplicates(self, subset=None):
-        raise NotImplementedError()
+        return self.dropDuplicates(subset)
 
     def dropna(self, how='any', thresh=None, subset=None):
         raise NotImplementedError()

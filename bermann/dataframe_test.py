@@ -225,9 +225,41 @@ class TestDataFrame(unittest.TestCase):
 
     #TODO drop
 
-    #TODO dropDuplicates
+    def test_drop_dupes_returns_deduplicated_rows(self):
+        df = self.sql.createDataFrame([
+            Row(name='Alice', age=5, height=80),
+            Row(name='Alice', age=5, height=80),
+            Row(name='Alice', age=10, height=80)
+        ])
 
-    #TODO drop_duplicates
+        expected = [
+            Row(name='Alice', age=5, height=80),
+            Row(name='Alice', age=10, height=80)
+        ]
+
+        self.assertEqual(sorted(expected), df.dropDuplicates().collect())
+
+    def test_drop_dupes_returns_rows_deduped_only_on_subset(self):
+        df = self.sql.createDataFrame([
+            Row(name='Alice', age=5, height=80),
+            Row(name='Alice', age=5, height=80),
+            Row(name='Alice', age=10, height=80)
+        ])
+
+        expected = [
+            Row(name='Alice', age=5, height=80)
+        ]
+
+        self.assertEqual(sorted(expected), df.dropDuplicates(['name', 'height']).collect())
+
+    def test_drop_dupes_returns_same_as_dropduplicates(self):
+        df = self.sql.createDataFrame([
+            Row(name='Alice', age=5, height=80),
+            Row(name='Alice', age=5, height=80),
+            Row(name='Alice', age=10, height=80)
+        ])
+
+        self.assertEqual(df.dropDuplicates().collect(), df.drop_duplicates().collect())
 
     #TODO dropna
 
