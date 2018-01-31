@@ -2,7 +2,6 @@ import unittest
 
 from pyspark.sql.types import StructType, StructField, StringType, IntegerType
 
-from bermann.dataframe import DataFrame
 from bermann.row import Row
 from bermann.spark_context import SparkContext
 from bermann.sql import SQLContext

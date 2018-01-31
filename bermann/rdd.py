@@ -475,7 +475,7 @@ class RDD(object):
     def toDF(self, schema=None):
         """This isn't technically an RDD method, but is part of Spark implicits, and
         is available on RDDs"""
-        return bermann.dataframe.DataFrame(self.collect(), schema=schema)
+        return bermann.dataframe.DataFrame.create(self.collect(), self.context, schema)
 
     def toLocalIterator(self):
         raise NotImplementedError()
