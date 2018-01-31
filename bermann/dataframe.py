@@ -79,10 +79,6 @@ class DataFrame(object):
                 raise Exception("Unexpected datatype encountered - should be Row or dict if no schema provided")
 
     @staticmethod
-    def _infer_types(value):
-        return types._infer_type(value)
-
-    @staticmethod
     def _from_dataframe(df, sc):
         return DataFrame(df.rdd, schema=df.schema)
 
