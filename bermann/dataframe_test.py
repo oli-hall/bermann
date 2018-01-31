@@ -1,5 +1,7 @@
 import unittest
 
+import pyspark
+
 from pyspark.sql.types import StructType, StructField, StringType, IntegerType
 
 from bermann.row import Row
@@ -26,6 +28,16 @@ class TestDataFrame(unittest.TestCase):
         rdd = self.sc.parallelize([
             Row(a='a', b=123),
             Row(a='aa', b=456)
+        ])
+
+        df = self.sql.createDataFrame(rdd)
+
+        self.assertEqual(df.count(), 2)
+
+    def test_creation_from_rdd_of_pyspark_rows(self):
+        rdd = self.sc.parallelize([
+            pyspark.sql.Row(a='a', b=123),
+            pyspark.sql.Row(a='aa', b=456)
         ])
 
         df = self.sql.createDataFrame(rdd)

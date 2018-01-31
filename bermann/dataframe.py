@@ -1,3 +1,4 @@
+import pyspark
 from pyspark.sql import types
 from pyspark.sql.types import StructField, StructType
 from pyspark.storagelevel import StorageLevel
@@ -50,6 +51,13 @@ class DataFrame(object):
                     assert sorted(first.fields.keys()) == sorted(schema)
                     return DataFrame(rdd, schema=types._infer_schema(first.asDict()))
 
+                elif isinstance(first, pyspark.sql.Row):
+                    assert sorted(first.asDict().keys()) == sorted(schema)
+                    return DataFrame(
+                        rdd.map(lambda r: Row(**r.asDict())),
+                        schema=types._infer_schema(first.asDict())
+                    )
+
                 elif isinstance(first, basestring) or isinstance(first, int):
                     raise Exception("Unexpected datatype encountered - should be Row, dict, list or tuple")
 
@@ -75,6 +83,8 @@ class DataFrame(object):
 
             elif isinstance(first, Row):
                 return DataFrame(rdd, schema=types._infer_schema(first.asDict()))
+            elif isinstance(first, pyspark.sql.Row):
+                return DataFrame(rdd.map(lambda r: Row(**r.asDict())), schema=types._infer_schema(first.asDict()))
             else:
                 raise Exception("Unexpected datatype encountered - should be Row or dict if no schema provided")
 
@@ -82,7 +92,6 @@ class DataFrame(object):
     def _from_dataframe(df, sc):
         return DataFrame(df.rdd, schema=df.schema)
 
-    # TODO it would be good to accept RDDs of PySpark Rows as well as bermann Rows
     def __init__(self, rdd=None, schema=None):
         """
         Creates a Bermann DataFrame object, given some input, specified
