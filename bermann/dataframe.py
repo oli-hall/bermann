@@ -123,7 +123,7 @@ class DataFrame(object):
         raise NotImplementedError()
 
     def collect(self):
-        return self.rows
+        return self.rdd.collect()
 
     def columns(self):
         return [c.name for c in self._schema.fields]

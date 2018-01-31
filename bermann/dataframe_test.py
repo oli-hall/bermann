@@ -137,9 +137,33 @@ class TestDataFrame(unittest.TestCase):
 
     #TODO coalesce
 
-    #TODO collect
+    def test_collect_returns_list_of_rows(self):
+        input = [
+            ('aaa', 123)
+        ]
 
-    #TODO columns
+        schema = StructType([
+            StructField('a', StringType()),
+            StructField('b', IntegerType())
+        ])
+
+        df = self.sql.createDataFrame(input, schema)
+
+        self.assertEqual([Row(**{'a': 'aaa', 'b': 123})], df.collect())
+
+    def test_columns_returns_column_list(self):
+        input = [
+            ('aaa', 123)
+        ]
+
+        schema = StructType([
+            StructField('a', StringType()),
+            StructField('b', IntegerType())
+        ])
+
+        df = self.sql.createDataFrame(input, schema)
+
+        self.assertEqual(['a', 'b'], df.columns())
 
     #TODO corr
 
