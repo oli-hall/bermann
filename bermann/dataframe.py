@@ -5,6 +5,7 @@ from pyspark.storagelevel import StorageLevel
 
 from bermann.rdd import RDD
 from bermann.row import Row
+from bermann.column import Column
 
 
 class DataFrame(object):
@@ -107,10 +108,10 @@ class DataFrame(object):
         self._schema = schema
 
     def __getattr__(self, item):
-        try:
-            return self.schema[item]
-        except KeyError:
+        if item not in self.columns():
             raise AttributeError(item)
+
+        return Column(item)
 
     @property
     def schema(self):
