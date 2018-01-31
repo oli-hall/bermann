@@ -132,7 +132,7 @@ class DataFrame(object):
         raise NotImplementedError()
 
     def coalesce(self, numPartitions):
-        raise NotImplementedError()
+        return self
 
     def collect(self):
         return self.rdd.collect()

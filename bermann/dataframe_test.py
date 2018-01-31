@@ -145,6 +145,19 @@ class TestDataFrame(unittest.TestCase):
     #TODO checkpoint
 
     #TODO coalesce
+    def test_coalesce_is_noop(self):
+        input = [
+            ('aaa', 123)
+        ]
+
+        schema = StructType([
+            StructField('a', StringType()),
+            StructField('b', IntegerType())
+        ])
+
+        df = self.sql.createDataFrame(input, schema)
+
+        self.assertEqual(df.collect(), df.coalesce(100).collect())
 
     def test_collect_returns_list_of_rows(self):
         input = [
